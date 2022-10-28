@@ -1,0 +1,1 @@
+SELECT  name,[processesrunning] FROM [dbo].[BPAResource] where [processesrunning] > 1

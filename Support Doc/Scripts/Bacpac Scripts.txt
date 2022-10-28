@@ -1,0 +1,3 @@
+sqlpackage.exe /a:Export /ssn:"oaazdbtest.database.windows.net" /sdn:AdventureWorks2019 /su:oakoro /sp:Pa55word /tf:"C:\OkeJobs\Bacpac\"
+
+sqlpackage.exe /a:Import /sf:"C:\OkeJobs\Bacpac\adventureDB.bacpac" /tsn:"BPEU1035" /tdn:AdventureWorksTest

@@ -1,0 +1,1 @@
+select * from sys.dm_user_db_resource_governance 

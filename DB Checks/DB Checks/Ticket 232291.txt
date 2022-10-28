@@ -1,0 +1,12 @@
+--2021-05-24 21:26:28.130
+--2022-09-12 11:42:27.597
+TableName				RowCounts	Used_MB	Unused_MB	Total_MB
+BPASessionLog_NonUnicode	79014704	134790.49	16.52		134807.01
+
+
+
+
+
+
+
+

@@ -1,0 +1,8 @@
+SELECT TOP (1000) [id]
+      ,[OperationTime]
+      ,[command]
+      ,[ExtraInfo]
+      ,[StartTime]
+      ,[EndTime]
+      ,[StatusMessage]
+  FROM [dbo].[AzureSQLMaintenanceLog]

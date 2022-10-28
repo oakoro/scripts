@@ -1,0 +1,32 @@
+IF NOT EXISTS (SELECT * FROM sys.external_file_formats WHERE name = 'SynapseParquetFormat') 
+	CREATE EXTERNAL FILE FORMAT [SynapseParquetFormat] 
+	WITH ( FORMAT_TYPE = PARQUET)
+GO
+
+IF NOT EXISTS (SELECT * FROM sys.external_data_sources WHERE name = 'dataarchive_oaazstorageacct_dfs_core_windows_net') 
+	CREATE EXTERNAL DATA SOURCE [dataarchive_oaazstorageacct_dfs_core_windows_net] 
+	WITH (
+		LOCATION = 'abfss://dataarchive@oaazstorageacct.dfs.core.windows.net' 
+	)
+GO
+--https://bpcarchiveligfd66ykhhtq.blob.core.windows.net/rpa-autoarchive-olabode
+CREATE EXTERNAL TABLE okelinktable2 (
+	[BusinessEntityID] int,
+	[DepartmentID] int,
+	[ShiftID] int,
+	[StartDate] date,
+	[EndDate] date,
+	[ModifiedDate] datetime2(7)
+	)
+	WITH (
+	LOCATION = 'HumanResources.EmployeeDepartmentHistory2022Jan29',
+	DATA_SOURCE = [dataarchive_oaazstorageacct_dfs_core_windows_net],
+	FILE_FORMAT = [SynapseParquetFormat]
+	)
+GO
+
+
+SELECT TOP 100 * FROM dbo.okelinktable2
+GO
+
+BPAProcess / 2022 / 02 / 28 / 10

@@ -1,0 +1,13 @@
+select  distinct database_name,@@SERVERNAME'SQLServer', max(start_time)'LastDateAccessed',min(start_time)'OldestDateAccessed' from sys.event_log_ex with (nolock)
+where event_type = 'connection_successful' and database_name <> 'master'
+group by database_name
+order by database_name
+
+select
+@@SERVERNAME'SQLServer',
+db_name()'DatabaseName',
+OBJECT_NAME(object_id)'ObjectName',
+max(COALESCE(last_user_seek,last_user_scan,last_user_lookup,last_user_update)) AS 'LastDateAccessed',
+min(COALESCE(last_user_seek,last_user_scan,last_user_lookup,last_user_update)) AS 'OldestDateAccessed'
+FROM sys.dm_db_index_usage_stats
+group by OBJECT_NAME(object_id)
