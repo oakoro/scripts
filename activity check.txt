@@ -1,0 +1,41 @@
+Check DB activities/connections - Request by Matt Rohler
+
+AB2006 (Aneurin Bevan University Health Board)
+WC1808 (Wiltshire Council)
+TM1812 (Thomas Miller)
+AC1909 (Acacium Group)
+FH1910 (Futures Housing Group)
+
+AB2006
+gbazabdb01.database.windows.net
+mdrLwcMRk8LO23wl
+
+
+WC1808
+gbazwcdb01.database.windows.net
+
+TM1812
+gbaztmdb01.database.windows.net
+
+AC1909
+gbazukdb01.database.windows.net
+
+FH1910
+gbazfhdb01.database.windows.net
+
+
+WS1708 (Wesleyan)	gbazwsdb01 
+UT1711 (Utilita)	gbazutdb01
+
+TMvy8la0zxR2mjSD
+gbazsydb01.database.windows.net
+
+
+RF2003 (Royal Free Hospital)
+Sub Id: a845e593-d344-41b5-9b94-a3258b972e0c
+
+SQL Server: gbazsydb01.database.windows.net
+Database name: SY1912_RPA_Production
+
+
+898ddc02-8cc0-4e10-9a8c-c0b5cbf7574b

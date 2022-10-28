@@ -1,0 +1,8 @@
+Step1 - Run on Master database:
+DB_Check_Database_BPC-Maintenance_Creation
+
+Step2 -
+Run on RPA and BPC Maintenance Databases:
+DB_Check_Database_Indexed_Views_Deployed
+DB_Check_Database_Objects_Deployed
+DB_Check_Database_Permissions

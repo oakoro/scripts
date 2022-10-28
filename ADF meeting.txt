@@ -1,0 +1,22 @@
+Deployment plan destination
+Sanity check
+Functional test
+
+Muda
+tested update of pipelines
+pipelines split and tested
+Multiple subscription being tested
+Working on other bugs and pull mike's branch to Muda's branch
+timescale - days
+
+Nathan
+Points to main branch AA repo
+Mike to confirm it's static and good
+ADF resource can be deployed
+
+Mike
+Synapse piece. What's being deployed
+
+
+
+
