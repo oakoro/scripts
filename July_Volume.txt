@@ -1,2 +1,0 @@
-select count(*) from [dbo].[BPASessionLog_NonUnicode] with (nolock)
-where startdatetime between '2022-07-01' and '2022-07-31' --9353771
