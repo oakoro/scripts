@@ -7,6 +7,10 @@ create table OkeTriggerTableTest (
 status bit Null
 )
 
+create table tblSessionReadyToCopy (
+[sessionnumber] int
+)
+
 
 /*
 Create update trigger on bpasession table
@@ -20,7 +24,7 @@ if  exists (select 1 from inserted where enddatetime is not null)
 begin
 insert OkeTriggerTableTest ([sessionid],[sessionnumber],[startdatetime],[enddatetime] )
 select [sessionid],[sessionnumber],[startdatetime],[enddatetime] from inserted
---end
+end
 
 /*
 Copy completed sessionlog data based on 
@@ -52,8 +56,14 @@ order by enddatetime desc
 
 update [dbo].[BPASession]
 set enddatetime = Null
-where sessionnumber in (72,51,292,138)
+where sessionnumber in (select sessionnumber from OkeTriggerTableTest)
 --sessionid = 'DAD4E939-3E07-4F35-9907-03BC4CEE8C12'
+
+update [dbo].[BPASession]
+set enddatetime = getdate()
+where sessionnumber in (
+609
+)
 
 select * from OkeTriggerTableTest
 
