@@ -4,7 +4,7 @@ DECLARE @high INT
 DECLARE @tbl1 TABLE ([sessionnumber] INT,[rowNumber] INT);
 
 
-/*Session numbers collected in order of enddatetime*/
+/*Collect rowcount of completed sessions in BPASessionLog table*/
 IF EXISTS (SELECT 1 FROM tblBPASessionUpdateTracking WHERE copystatus IS NULL)
 BEGIN
 TRUNCATE TABLE tblSessionReadyToCopy; 		
@@ -14,7 +14,10 @@ WHERE sessionnumber in (SELECT top (50) sessionnumber FROM tblBPASessionUpdateTr
 GROUP BY sessionnumber
 
   
- /*Combines session numbers based on size*/
+ /*Check for session number with maximum row count.
+ Populate tblSessionReadyToCopy with session numbers to 
+ be copied based on maximum row count
+ */
  SET @high = 
  (SELECT TOP (1)  [rowNumber] FROM @tbl1 ORDER BY [rowNumber] DESC) ;
  
@@ -67,6 +70,7 @@ GROUP BY sessionnumber
  END
  ELSE
  BEGIN
+  IF @high > 500000
  INSERT tblSessionReadyToCopy([sessionnumber])
  SELECT TOP (1) [sessionnumber] FROM @tbl1 ORDER BY [rowNumber] DESC 
  END
