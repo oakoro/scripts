@@ -1,7 +1,7 @@
 declare @endlogid bigint, @currentlogid bigint, @initlogid bigint = 20627177
 select top 1 @endlogid = logid from [dbo].[BPASessionLog_NonUnicode] with (nolock)
 order by logid desc
-select @endlogid
+select @endlogid 'endlogid'
 if exists (select 1 from [dbo].[BPASessionLog_NonUnicodeRetain])
 begin
 select top 1 @currentlogid = logid from [dbo].[BPASessionLog_NonUnicodeRetain]
@@ -60,3 +60,7 @@ select top 1 @currentlogid = logid from [dbo].[BPASessionLog_NonUnicodeRetain]
 order by logid desc  
 end
 
+/*
+endlogid
+21146779
+*/
