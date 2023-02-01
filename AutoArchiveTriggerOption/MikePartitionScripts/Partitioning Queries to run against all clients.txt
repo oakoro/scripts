@@ -1,0 +1,8 @@
+Queries to run against all clients:
+
+Select all open sessions with startdatetime and status - get what sessions need to be closed,
+Select session/sessionlog count per Day to get the average/max per Day/Week - to appropriately size tests,
+Select Session/sessionlog size and rowcount to get the average row size - to appropriately size tests
+select sessionnumber, startdatetime, enddatetime, Calculated Yes/No - find sessions crossing the reboot/partitioned datetime
+Client reboot times within automation - to use for partition function and schema
+Select clients Azure SQL service tier - to appropriately size tests

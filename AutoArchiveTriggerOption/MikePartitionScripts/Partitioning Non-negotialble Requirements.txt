@@ -1,0 +1,6 @@
+Non-negotialble Requirements
+
+1. Must have all sessions ended or allow the BPC DBAs to end the sessions before partitioning.
+2. Client must have a consistent date and time when the workers are shutdown (i.e. every Sunday at 4 AM)
+3. Partition "Sliding Window" must be use some kind of automation to trigger this process (automation account, elastic jobs..)
+4. Access to run the BP Application within the BPC T&E Subscription.

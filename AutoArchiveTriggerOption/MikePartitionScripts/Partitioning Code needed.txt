@@ -1,0 +1,11 @@
+Code needed:
+create secondary sessionlog tables/indexes 
+Find and close active sessions (before archiving old data & every partition date afterwards)
+Partition function/schema for 8 range right partitions of data in table
+return current max logid
+return min and max logid for each reboot datetime & new create range right partition schema based upon the results
+Weekly partition Sliding Window: Merge & switch oldest weeks partition to archive table, close current partition & create new range right partition for two tables (Primary and Archive?)
+trigger ADF copy activity with verification
+truncate archived partition
+sessionlog partitioned views capable of selecting/inserting/updating/deleting data
+switch partitions/data between the 6/7 tables

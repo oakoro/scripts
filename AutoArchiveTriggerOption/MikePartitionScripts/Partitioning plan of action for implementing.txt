@@ -1,0 +1,10 @@
+Need plan of action for implementing: 
+ 
+A. All sessions are cleared down and start with last reboot date (will depand on scheduled reboots have been consistantly working AND all sessions are closed)
+
+B. To retain one month of data
+Clients not rebooting, sessions not ended & over a week old or there is no clear weekly start & stop datetime: 
+start with current week only (move everything else to archive), 
+
+clients rebooting:
+archive old data - partition archive table & use Oke’s ClearDown script to copy data into partitioned table  -  truncate & partition primary table - switch month data from archive table's partitions

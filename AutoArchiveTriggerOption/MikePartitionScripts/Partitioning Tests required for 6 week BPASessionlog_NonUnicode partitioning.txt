@@ -1,0 +1,40 @@
+Tests required for 6 week BPASessionlog_NonUnicode partitioning (Test with different service tiers)
+
+A. Question: What happens within the application and in session/sessionlog when we stop a session and the session is:
+Scenarios:
+open but not stopped, 
+idling but running, 
+in middle of process
+
+B.
+Time/DTU to create partition function/schema on avg/Max sized table holding 1 month's data for each client's DTU
+Time/DTU to truncate the 6th table and switch partitions between the 6 avg/Max sized tables holding 1 week's data for each client's DTU
+
+
+C. Partition Right "Sliding Window" testing (Time to switch, query time and costs)
+Scenarios:
+All partitions in on table
+partitions two tables
+partitions in three tables
+Partitions are in 8 tables (One for each partition - including left/right)
+
+D. Partition Right via table renaming testing (Time to switch, query time and costs)
+Partitions are in 8 tables (One for each partition - including active right)
+ 
+E. Query time/DTU to select/insert/update/delete session data with 1 month's avg/maxdata and logid PK is clustered
+One Table:
+non partitioned
+patitioned by week
+via partitioned view
+
+Separate tables and partitioned view
+6 non partitioned tables
+
+F. Query time/DTU to select select/insert/update/delete session data with 1 month's avg/maxdata and logid PK is non-clustered index and sessionnumber is clustered index
+One Table:
+non partitioned
+patitioned by week
+via partitioned view
+
+Separate tables and partitioned view
+6 non partitioned tables
