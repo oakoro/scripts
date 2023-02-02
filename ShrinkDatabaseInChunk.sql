@@ -22,7 +22,7 @@ set @DBFileName = 'data_0'  --<--- CHANGE HERE !!
 set @TargetFreeMB = 10000			--<--- CHANGE HERE !!
 
 -- Set Increment to shrink file by in MB
-set @ShrinkIncrementMB = 500			--<--- CHANGE HERE !!
+set @ShrinkIncrementMB = 1000			--<--- CHANGE HERE !!
 
 -- Show Size, Space Used, Unused Space, and Name of all database files
 select

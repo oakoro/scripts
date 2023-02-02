@@ -3,7 +3,7 @@ truncate table [dbo].[BPASessionLog_NonUnicode_PartitionTest_STAGING];
 GO
 
 /*** Switch (Move) the data in Partition 2 to the BPASessionLog_NonUnicode_Stage table ***/
-ALTER TABLE [dbo].[BPASessionLog_NonUnicode_PartitionTest] SWITCH PARTITION 9 TO [dbo].[BPASessionLog_NonUnicode_PartitionTest_STAGING];
+ALTER TABLE [dbo].[BPASessionLog_NonUnicode_PartitionTest] SWITCH PARTITION 4 TO [dbo].[BPASessionLog_NonUnicode_PartitionTest_STAGING];
 GO
 select count(*) from [dbo].[BPASessionLog_NonUnicode_PartitionTest_STAGING]
 go
