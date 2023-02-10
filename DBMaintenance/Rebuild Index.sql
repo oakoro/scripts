@@ -12,7 +12,8 @@ INNER JOIN sys.objects AS o WITH (NOLOCK)
 ON i.[object_id] = o.[object_id]
 WHERE ps.database_id = DB_ID()
 AND ps.page_count > 500 and ps.avg_fragmentation_in_percent > 29 
-AND OBJECT_NAME(ps.OBJECT_ID) NOT IN ('BPASessionLog_NonUnicode_pre65','BPASessionLog_Unicode_pre65')
+AND OBJECT_NAME(ps.OBJECT_ID) NOT IN ('BPASessionLog_NonUnicode_pre65','BPASessionLog_Unicode_pre65') 
+and i.name not in ('nci_wi_BPAScheduleLog_E91908E7D1886B9C77B5684B4E18')
 ORDER BY [Object Name]
 
 open index_maintenance
@@ -24,9 +25,9 @@ begin
 set nocount on
 select @schema, @table, @indexName, @frag
 if @table = 'BPASessionLog_NonUnicode' and @indexName = 'PK_BPASessionLog_NonUnicode'
-set @cmdstr = 'ALTER INDEX '+@indexName +' ON '+@schema+'.'+@table +' REORGANIZE'
+set @cmdstr = 'ALTER INDEX '+@indexName +' ON '+@schema+'.'+@table +' REORGANIZE;'
 else
-set @cmdstr = 'ALTER INDEX '+@indexName +' ON '+@schema+'.'+@table +' REBUILD WITH (ONLINE=ON)'
+set @cmdstr = 'ALTER INDEX '+@indexName +' ON '+@schema+'.'+@table +' REBUILD WITH (ONLINE=ON);'
 print (@cmdstr)
 --EXECUTE sp_executesql @cmdstr
 fetch next from index_maintenance into @schema, @table, @indexName, @frag
@@ -34,3 +35,4 @@ end
 
 close index_maintenance
 deallocate index_maintenance
+
