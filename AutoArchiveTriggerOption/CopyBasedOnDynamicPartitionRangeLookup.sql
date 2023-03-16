@@ -2,7 +2,8 @@ declare @initboundary bigint, @nextboundary bigint
 declare @tblRange table (rangevalue bigint)
 				 
 insert @tblRange(rangevalue)
-SELECT top 2 convert(bigint,convert(nvarchar(max),prv.value))
+SELECT --top 1 convert(bigint,convert(nvarchar(max),prv.value))
+*
 
             FROM sys.partition_functions AS pf
 
@@ -11,7 +12,7 @@ SELECT top 2 convert(bigint,convert(nvarchar(max),prv.value))
                   prv.function_id = pf.function_id
 			   WHERE
 
-                  pf.name = 'pflogid2'
+                  pf.name = 'pflogid2'  
 				order by prv.value 
 --select * from @tblRange
 select top  1 @initboundary = 
@@ -20,7 +21,7 @@ select top  1 @nextboundary =
 rangevalue from @tblRange order by rangevalue desc
 select @initboundary'initboundary', @nextboundary'nextboundary'
 select count(*)'TotalRowsToCopy' from [BPASessionLog_NonUnicode] 
-where logid between @initboundary and  @nextboundary
+where logid between @initboundary and  @nextboundary-1
 
 --select * from [BPASessionLog_NonUnicode_PartitionTest] order by logid --887877 - 950042
 
@@ -28,3 +29,5 @@ where logid between @initboundary and  @nextboundary
 
 --logid >= 24377336 and logid < 2147483647
 --logid >= 1 and logid < 4875468
+
+--4875460

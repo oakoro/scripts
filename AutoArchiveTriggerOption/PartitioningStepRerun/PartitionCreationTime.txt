@@ -1,0 +1,6 @@
+RowCount		Time			SizeInMB
+5730383		28:40 mins
+10723914		1:05:52
+20552215		4:22:00		19567.53
+
+bpc-sql-4ykfv5uftshfi.database.windows.net

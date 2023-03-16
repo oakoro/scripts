@@ -32,7 +32,7 @@ END
 CLOSE Database_Storage_Usage_Cursor
 DEALLOCATE Database_Storage_Usage_Cursor
 
-SELECT * FROM @TBL ORDER BY PercentageFreeSpace desc
+SELECT * FROM @TBL ORDER BY allocated_storage_in_megabytes desc
 --SELECT end_time,sku, database_name,allocated_storage_in_megabytes,storage_in_megabytes,
 --(allocated_storage_in_megabytes-storage_in_megabytes)'DatabaseDataSpaceAllocatedUnusedInMB',
 --((allocated_storage_in_megabytes-storage_in_megabytes)/allocated_storage_in_megabytes)*100 'PercentageFreeSpace'

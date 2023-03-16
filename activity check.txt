@@ -39,3 +39,10 @@ Database name: SY1912_RPA_Production
 
 
 898ddc02-8cc0-4e10-9a8c-c0b5cbf7574b
+
+bpc-sql-7jpa4pwe4rhvg.database.windows.net
+tyTT0eKtPmS?*B2v
+
+
+bpc-sql-jjaxdzyrjyvee.database.windows.net
+rgC+svDaU4oK0U?V

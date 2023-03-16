@@ -16,10 +16,10 @@ declare @TargetFreeMB int
 declare @ShrinkIncrementMB int
 
 -- Set Name of Database file to shrink
-set @DBFileName = 'data_0'  --<--- CHANGE HERE !!
+set @DBFileName = 'dfa_data_3'  --<--- CHANGE HERE !!
 
 -- Set Desired file free space in MB after shrink
-set @TargetFreeMB = 10000			--<--- CHANGE HERE !!
+set @TargetFreeMB = 1000			--<--- CHANGE HERE !!
 
 -- Set Increment to shrink file by in MB
 set @ShrinkIncrementMB = 5000			--<--- CHANGE HERE !!
@@ -87,3 +87,4 @@ select
         [DBFileName]    = a.name
 from
         sysfiles a
+

@@ -1,3 +1,5 @@
+select distinct schema_name,table_name,table_rows,stats_name,last_updated 
+from (
 SELECT 
   sh.[name] as [schema_name], 
   so.[name] as [table_name], 
@@ -59,8 +61,9 @@ FROM
     FROM 
       sys.databases 
     WHERE 
-      database_id = db_id()
+      database_id = db_id() 
   ) cp 
+
 GROUP BY 
   sh.[name], 
   so.[name], 
@@ -77,7 +80,12 @@ GROUP BY
   sp.[rows_sampled], 
   sp.[persisted_sample_percent], 
   cp.[compatibility_level] 
-ORDER BY 
-  sh.[name], 
-  so.[name], 
-  st.[stats_id]
+
+--ORDER BY 
+--  sh.[name], 
+--  so.[name], 
+--  st.[stats_id]
+)a
+where (last_updated < '2023-01-01 10:06:06.0266667' or last_updated is null ) and table_name not like 'sys%' and table_rows > 5000
+order by last_updated
+
