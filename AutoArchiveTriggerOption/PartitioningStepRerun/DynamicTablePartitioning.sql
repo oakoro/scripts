@@ -28,25 +28,23 @@ CREATE UNIQUE CLUSTERED INDEX [PK_dynamicPartitionTest]
 
 /***Step 4 Get top id and create partition boundaries ***/
 
-declare @firstPartitonID int, @nextPartitionID int
-select @firstPartitonID = IDENT_CURRENT('dbo.dynamicPartitionTest') -- Get last identity number in the table
+declare @nextPartitionID int
+select @nextPartitionID = IDENT_CURRENT('dbo.dynamicPartitionTest') -- Get last identity number in the table
 
 ---Test if partitiopn already exist and create the next partiton
 if not exists(
 select prv.value
 from sys.partition_functions as pf
 join sys.partition_range_values as prv on pf.function_id = prv.function_id
-where pf.name = 'PF_dynamicPartition' and prv.value = @firstPartitonID
+where pf.name = 'PF_dynamicPartition' and prv.value = @nextPartitionID
 )
 begin
 alter partition scheme PS_dynamicPartition next used [primary];
-alter partition function PF_dynamicPartition() split range(@firstPartitonID);
+alter partition function PF_dynamicPartition() split range(@nextPartitionID);
 end
 else
 begin
-set @nextPartitionID = @firstPartitonID 
-alter partition scheme PS_dynamicPartition next used [primary];
-alter partition function PF_dynamicPartition() split range(@nextPartitionID);
+Print 'Partition already exists';
 end
 
 
