@@ -44,7 +44,7 @@ alter partition function PF_dynamicPartition() split range(@firstPartitonID);
 end
 else
 begin
-set @firstPartitonID = @nextPartitionID
+set @nextPartitionID = @firstPartitonID 
 alter partition scheme PS_dynamicPartition next used [primary];
 alter partition function PF_dynamicPartition() split range(@nextPartitionID);
 end
