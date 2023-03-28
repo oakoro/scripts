@@ -1,4 +1,4 @@
-declare @endlogid bigint, @currentlogid bigint, @initlogid bigint = 131793964
+declare @endlogid bigint, @currentlogid bigint, @initlogid bigint = 94245071
 select top 1 @endlogid = logid from [dbo].[BPASessionLog_NonUnicode] with (nolock)
 order by logid desc
 select @endlogid 'endlogid'
