@@ -88,3 +88,5 @@ WHERE pstats.object_id = OBJECT_ID('[dbo].[BPASessionLog_NonUnicode_PartitionTes
 
 
 select * from [dbo].[BPASessionLog_NonUnicode_PartitionTest] where logid <= 4
+
+--truncate table [dbo].[BPASessionLog_NonUnicode_PartitionTest] with (partitions (1))
