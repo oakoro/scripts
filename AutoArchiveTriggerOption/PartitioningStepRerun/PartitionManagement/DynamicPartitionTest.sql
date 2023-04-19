@@ -1,5 +1,8 @@
 --[ARCH].[BPASessionLog_NonUnicodeOATest
---create partition function PF_dynamicBPASessionLogPartition(bigint) as range right for values()	
+--declare @nextPartitionID bigint
+--select @nextPartitionID = IDENT_CURRENT('arch.BPASessionLog_NonUnicodeOATest')
+--select @nextPartitionID 'NextPartiton'
+--create partition function PF_dynamicBPASessionLogPartition(bigint) as range right for values(@nextPartitionID)	
 --create partition scheme PS_dynamicBPASessionLogPartition as partition PF_dynamicBPASessionLogPartition all to ([primary])
 
 /****** Object:  Index [PK_BPASessionLog_NonUnicode2]    Script Date: 19/04/2023 10:30:41 ******/
@@ -8,6 +11,12 @@
 --	[logid] ASC
 --)WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 --GO
+
+/****** Object:  Index [PK_BPASessionLog_NonUnicodeTest2]    Script Date: 19/04/2023 14:16:16 ******/
+--ALTER TABLE [ARCH].[BPASessionLog_NonUnicodeOATest] DROP CONSTRAINT [PK_BPASessionLog_NonUnicodeTest2] WITH ( ONLINE = OFF )
+--GO
+
+
 
 --/****** Object:  Index [Index_BPASessionLog_NonUnicode2_sessionnumber]    Script Date: 19/04/2023 10:31:24 ******/
 --CREATE NONCLUSTERED INDEX [Index_BPASessionLog_NonUnicodeTest2_sessionnumber] ON [ARCH].[BPASessionLog_NonUnicodeOATest]
@@ -53,7 +62,7 @@
 --           ,[targetappworkingset]
 --           ,[starttimezoneoffset]
 --           ,[endtimezoneoffset])
--- select top 250 [sessionnumber]
+-- select top 10 [sessionnumber]
 --           ,[stageid]
 --           ,[stagename]
 --           ,[stagetype]
@@ -95,3 +104,6 @@
 --begin
 --Print 'Partition already exists';
 --end
+
+--truncate table [ARCH].[BPASessionLog_NonUnicodeOATest]
+select * from [ARCH].[BPASessionLog_NonUnicodeOATest]
