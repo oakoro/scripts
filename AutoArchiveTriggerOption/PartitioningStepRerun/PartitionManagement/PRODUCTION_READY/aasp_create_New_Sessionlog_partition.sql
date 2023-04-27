@@ -1,4 +1,4 @@
-/****** Object:  StoredProcedure [BPC].[aasp_create_New_Sessionlog_partition]    Script Date: 27/04/2023 12:28:17 ******/
+/****** Object:  StoredProcedure [BPC].[aasp_create_New_Sessionlog_partition]    Script Date: 27/04/2023 12:45:37 ******/
 SET ANSI_NULLS ON
 GO
 
@@ -7,16 +7,18 @@ GO
 
 
 
+
+
 -- =============================================
 -- Author:      Oke Akoro
 -- Description: Create new partition in BPASessionLog_NonUnicode table
--- Script execution Example: [BPC].[aasp_create_New_Sessionlog_partition] '[ARCH].[BPASessionLog_NonUnicodeOATest]','PF_dynamicBPASessionLogPartition'
+-- Script execution Example: [BPC].[aasp_create_New_Sessionlog_partition] '[dbo].[BPASessionLog_NonUnicode]','PF_Dynamic_NU'
 -- variable description: 
 --	@tablename - Partitioned table name, 
 --  @partitionfuntion - partition function
 -- =============================================
 
-CREATE PROCEDURE [BPC].[aasp_create_New_Sessionlog_partition]
+ALTER PROCEDURE [BPC].[aasp_create_New_Sessionlog_partition]
 @tablename NVARCHAR(400),@partitionfuntion NVARCHAR(50)
 
 AS
@@ -37,8 +39,8 @@ join sys.partition_range_values AS prv ON pf.function_id = prv.function_id
 WHERE pf.name = @partitionfuntion AND prv.value = @nextPartitionID
 )
 BEGIN
-alter partition scheme PS_dynamicBPASessionLogPartition next used [primary];
-alter partition function PF_dynamicBPASessionLogPartition() split range(@nextPartitionID);
+alter partition scheme PS_Dynamic_NU next used [primary];
+alter partition function PF_Dynamic_NU() split range(@nextPartitionID);
 END
 ELSE
 BEGIN

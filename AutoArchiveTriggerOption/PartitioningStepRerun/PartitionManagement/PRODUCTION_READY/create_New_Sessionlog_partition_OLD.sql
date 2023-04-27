@@ -1,10 +1,9 @@
-/****** Object:  StoredProcedure [BPC].[aasp_create_New_Sessionlog_partition]    Script Date: 27/04/2023 12:28:17 ******/
+/****** Object:  StoredProcedure [BPC].[aasp_create_New_Sessionlog_partition]    Script Date: 20/04/2023 16:15:16 ******/
 SET ANSI_NULLS ON
 GO
 
 SET QUOTED_IDENTIFIER ON
 GO
-
 
 
 -- =============================================
@@ -28,8 +27,6 @@ SELECT @nextPartitionID = IDENT_CURRENT(@tablename)
 
 
 ---Test if partitiopn already exist and create the next partiton
-IF @nextPartitionID IS NOT NULL
-BEGIN
 IF NOT EXISTS(
 SELECT prv.value
 FROM sys.partition_functions AS pf
@@ -43,7 +40,6 @@ END
 ELSE
 BEGIN
 PRINT 'Partition already exists';
-END
 END
 GO
 
