@@ -1,0 +1,1 @@
+--ALTER SCHEMA BPC TRANSFER [dbo].[WQI_watermark]

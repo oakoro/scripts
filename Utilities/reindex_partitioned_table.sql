@@ -1,0 +1,2 @@
+ALTER INDEX [PK_bpsessionlogPartitionTest] ON bpsessionlogPartitionTest REBUILD PARTITION = 3 WITH (ONLINE= ON);
+ALTER INDEX [PK_bpsessionlogPartitionTest] ON bpsessionlogPartitionTest REORGANIZE PARTITION = 3 
