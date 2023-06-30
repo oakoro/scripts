@@ -56,7 +56,7 @@ EXECUTE SP_EXECUTESQL @str
 END
 IF @fragment > 30 AND @index <> 'PK_BPASessionLog_NonUnicode'
 BEGIN
-SET @str = 'ALTER INDEX '+@index +' ON '+@schema+'.'+@table+ ' REBUILD'
+SET @str = 'ALTER INDEX '+@index +' ON '+@schema+'.'+@table+ ' REBUILD WITH (ONLINE=ON)'
 IF @debug = 1
 PRINT @str
 ELSE 

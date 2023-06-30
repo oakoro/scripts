@@ -1,6 +1,6 @@
 SET NOCOUNT ON
 DECLARE @schema nvarchar(10), @table nvarchar(200), @index nvarchar(200), 
-		@fragment float, @str nvarchar(400),@debug bit = 1
+		@fragment float, @str nvarchar(400),@partition_id tinyint, @debug bit = 1
 
 DROP TABLE IF EXISTS dbo.indexmaintenance;
 
@@ -11,6 +11,32 @@ CREATE TABLE indexmaintenance(
 [fragment] float,
 [processeddate] datetime
 )
+
+DROP TABLE IF EXISTS dbo.#Partitioned
+CREATE TABLE #Partitioned (
+TableName sysname,
+Partitiion_id sysname,
+IndexName sysname
+)
+
+;with cte_1
+as
+(
+select 
+OBJECT_NAME(object_id)'TableName',partition_number,
+ROW_NUMBER() over (partition by object_id order by index_id) 'Position'
+from  sys.partitions 
+where OBJECT_NAME(object_id) like 'BPA%'
+)
+insert #Partitioned
+select distinct  OBJECT_NAME(p.object_id),
+partition_number,i.name
+from
+sys.partitions p join sys.indexes i on p.object_id = i.object_id and p.index_id = i.index_id
+where OBJECT_NAME(p.object_id) in
+(select distinct a.TableName 
+from cte_1 a 
+where a.partition_number > 1)
 
 DECLARE defrag_index CURSOR
 FOR
@@ -38,35 +64,29 @@ WHILE @@FETCH_STATUS = 0
 
 BEGIN
 --PRINT  @schema +' '+ @table+' '+ @index+' ' + convert(nvarchar(10),@fragment)
-IF @fragment BETWEEN 0 AND 30
+IF @table = 'BPASessionLog_NonUnicode'
 BEGIN
-SET @str = 'ALTER INDEX '+@index +' ON '+@schema+'.'+@table+ ' REORGANIZE'
-IF @debug = 1
-PRINT @str
-ELSE 
-EXECUTE SP_EXECUTESQL @str
+	IF EXISTS (SELECT 1 FROM #Partitioned WHERE TableName = @table)
+	BEGIN
+	SELECT @partition_id = Partitiion_id FROM #Partitioned WHERE TableName = @table AND IndexName = @index
+	END
+		BEGIN
+		SET @str = 'ALTER INDEX '+@index +' ON '+@schema+'.'+@table+ ' REORGANIZE PARTITION '+CONVERT(NVARCHAR(10),@partition_id)
+		--ALTER INDEX [PK_bpsessionlogPartitionTest] ON bpsessionlogPartitionTest REORGANIZE PARTITION = 3
+		PRINT (@str)
+		END
 END
-IF @fragment > 30 AND @index = 'PK_BPASessionLog_NonUnicode'
-BEGIN
-SET @str = 'ALTER INDEX '+@index +' ON '+@schema+'.'+@table+ ' REORGANIZE'
-IF @debug = 1
-PRINT @str
-ELSE 
-EXECUTE SP_EXECUTESQL @str
-END
-IF @fragment > 30 AND @index <> 'PK_BPASessionLog_NonUnicode'
-BEGIN
-SET @str = 'ALTER INDEX '+@index +' ON '+@schema+'.'+@table+ ' REBUILD'
-IF @debug = 1
-PRINT @str
-ELSE 
-EXECUTE SP_EXECUTESQL @str
-END
-INSERT indexmaintenance VALUES(@schema,@table,@index,@fragment,getdate())
+	
+
+
+
+--INSERT indexmaintenance VALUES(@schema,@table,@index,@fragment,getdate())
 
 
 FETCH NEXT FROM defrag_index INTO @schema, @table, @index, @fragment
 END
 CLOSE defrag_index
 DEALLOCATE defrag_index
+
+select * from #Partitioned
 SET NOCOUNT OFF
