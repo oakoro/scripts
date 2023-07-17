@@ -1,0 +1,4 @@
+Connect-AzAccount -TenantId f4c566ce-a3ce-4b10-b55b-1e9d56ad1b26
+Connect-AzAccount -TenantId 898ddc02-8cc0-4e10-9a8c-c0b5cbf7574b -SubscriptionId 04ff767f-a66a-4cb1-99c1-a60ff8910bf6
+ Get-AzSqlDatabase -ServerName bpc-sql-2eicbfwtizfss -ResourceGroupName RG-SQL | Select-Object ServerName,DatabaseName,Location,Edition,CollationName,MaxSizeBytes,Status,CreationDate  | Format-Table
+

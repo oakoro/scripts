@@ -1,0 +1,51 @@
+<#
+.Synopsis
+A Cloud Shell (PowerShell) script to run SQL scripts on multiple Azure SQL databases.
+
+.DESCRIPTION
+This is a demo script on how to run SQL scripts on all Azure SQL databases belonging to a server.
+
+.Notes
+Created   : 2022-03-27
+Version   : 1.0
+Author    : Johan Åhlén
+Twitter   : @how2codeinfo
+Blog      : https://www.how2code.info
+Disclaimer: This script is provided "AS IS" with no warranties.
+#>
+
+Import-Module SQLServer
+Import-Module Az.Accounts -MinimumVersion 2.2.0
+
+$resourcegroup = "ADFTest"
+$servername = "okedbserver"
+
+$databases = Get-AzSqlDatabase -ResourceGroupName $resourcegroup -ServerName $servername
+| Where-Object {$_.Edition -ne "System"}
+| Select-Object -Property ResourceId,DatabaseName,ElasticPoolName
+
+# Get an access token for the current user so we can login to the Azure SQL Databases
+$dbaccesstoken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
+
+# List databases and which elastic pool they belong to
+Write-Output ($databases | Select-Object -Property DatabaseName,ElasticPoolName | Format-Table)
+
+foreach ($database in $databases)
+{
+    # Display progress
+    Write-Output "Now processing database $($database.DatabaseName)"
+
+    # Run scripts}
+    Invoke-Sqlcmd -InputFile "CommandLog.sql" -ServerInstance "$($servername).database.windows.net" -Database $database.DatabaseName -AccessToken $dbaccesstoken
+    Invoke-Sqlcmd -InputFile "CommandExecute.sql" -ServerInstance "$($servername).database.windows.net" -Database $database.DatabaseName -AccessToken $dbaccesstoken
+    Invoke-Sqlcmd -InputFile "IndexOptimize.sql" -ServerInstance "$($servername).database.windows.net" -Database $database.DatabaseName -AccessToken $dbaccesstoken
+
+    # If you wish to run a simple statement instead of a script file, this is how...
+    # Invoke-Sqlcmd -ServerInstance "$($servername).database.windows.net" -Database $database.DatabaseName -AccessToken $dbaccesstoken -Query "SELECT 1"
+}
+POWERSHELL
+Press Ctrl+S in code to save and Ctrl+Q to quit.
+
+Running the script
+Now you should be able to see your files:
+

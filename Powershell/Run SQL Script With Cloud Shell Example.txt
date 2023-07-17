@@ -1,0 +1,16 @@
+PS /home/oke> Import-Module SQLServer                                                                                                                                                    
+PS /home/oke> Import-Module Az.Accounts -MinimumVersion 2.2.0                                                                                                                            
+PS /home/oke> $rg = "ADFTest"                                                                                                                                                                                     
+PS /home/oke> $servername = "okedbserver"
+PS /home/oke> $database = Get-AzSqlDatabase -ResourceGroupName $rg -ServerName $servername | Where-Object {$_.Edition -ne "system"} | Select-Object -Property ResourceId, DatabaseName, ElasticPoolName           
+PS /home/oke> $database 
+
+PS /home/oke> $dbaccesstoken = (Get-AzAccessToken -ResourceUrl https://database.windows.net).Token
+PS /home/oke> Write-Output ($database | Select-Object -Property DatabaseName, ElasticPoolName | Format-Table)           
+
+PS /home/oke> foreach ($db in $database)                                                      
+>> {
+>> Write-Output "Now processing database $($db.DatabaseName)       
+>> Invoke-Sqlcmd -InputFile "query1.sql" -ServerInstance "$($servername).database.windows.net" -Database $db.DatabaseName -AccessToken $dbaccesstoken          
+>> Invoke-Sqlcmd -ServerInstance "$($servername).database.windows.net" -Database $db.DatabaseName -AccessToken $dbaccesstoken -Query "SELECT 1"      
+>> }
