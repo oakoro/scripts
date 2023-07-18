@@ -69,4 +69,5 @@ FETCH NEXT FROM defrag_index INTO @schema, @table, @index, @fragment
 END
 CLOSE defrag_index
 DEALLOCATE defrag_index
+--EXEC sp_updatestats;
 SET NOCOUNT OFF
