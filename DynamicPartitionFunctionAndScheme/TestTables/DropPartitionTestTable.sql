@@ -1,0 +1,4 @@
+--DROP TABLE [dbo].[BPASessionLog_NonUnicode]
+--DROP TABLE [dbo].[BPASessionLog_Unicode]
+--DROP PARTITION SCHEME PS_Dynamic_NU
+--DROP PARTITION FUNCTION [PF_Dynamic_NU]

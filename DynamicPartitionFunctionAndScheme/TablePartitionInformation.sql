@@ -1,0 +1,95 @@
+SELECT
+    t.name AS [Table],
+    i.name AS [Index],
+    i.type_desc,
+    i.is_primary_key,
+    ps.name AS [Partition Scheme],
+	pf.name AS [Partition Function]
+FROM sys.tables t
+INNER JOIN sys.indexes i
+    ON t.object_id = i.object_id
+    AND i.type IN (0,1)
+INNER JOIN sys.partition_schemes ps   
+    ON i.data_space_id = ps.data_space_id
+INNER JOIN sys.partition_functions pf
+	ON ps.function_id = pf.function_id
+
+
+	SELECT 
+    t.name AS [Table], 
+    i.name AS [Index], 
+    p.partition_number,
+    f.name 'FunctionName',
+    r.boundary_id, 
+    r.value AS [Boundary Value] ,
+	p.rows
+	FROM sys.tables AS t  
+JOIN sys.indexes AS i  
+    ON t.object_id = i.object_id  
+JOIN sys.partitions AS p
+    ON i.object_id = p.object_id AND i.index_id = p.index_id   
+JOIN  sys.partition_schemes AS s   
+    ON i.data_space_id = s.data_space_id  
+JOIN sys.partition_functions AS f   
+    ON s.function_id = f.function_id  
+LEFT JOIN sys.partition_range_values AS r   
+    ON f.function_id = r.function_id and r.boundary_id = p.partition_number  
+WHERE i.type = 1 AND t.name IN ('BPASessionLog_NonUnicode','BPASessionLog_Unicode')
+ORDER BY t.name ,p.partition_number ASC;
+
+--declare
+--@tableschema NVARCHAR(20), @tablename NVARCHAR(400),@partitionfunction NVARCHAR(50),@partitionsretained TINYINT
+
+--set @tableschema = 'dbo'
+--set @tablename = 'BPASessionLog_NonUnicode'
+--set @partitionfunction = 'PF_Dynamic_NU'
+--set @partitionsretained = 6
+
+--DECLARE @nextpartitionboundarytodelete BIGINT -- Oldest Next partiton boundary to delete
+--DECLARE @truncatetablestr NVARCHAR(200) -- Partition truncate script
+--DECLARE @partitionnumber NVARCHAR(10) -- Partition number to delete
+--DECLARE @lastprocessedlogid BIGINT -- Last logid copied to data lake
+--DECLARE @partitionboundarycount TINYINT -- Existing table partitions
+--DECLARE @alterpartationstr NVARCHAR(200) -- Partition delete script
+
+--SELECT @lastprocessedlogid = logid FROM [BPC].[adf_watermark_sessionlog] WHERE tablename = @tablename;
+
+--SELECT @partitionboundarycount = COUNT(*) FROM sys.partition_range_values r JOIN sys.partition_functions f ON r.function_id = f.function_id
+--WHERE f.name = @partitionfunction 
+
+--;WITH cte_tablepartitioninfo
+--AS
+--(
+--SELECT 
+--     p.partition_number,
+--     CONVERT(BIGINT,r.value) AS [Boundary_Value] ,
+--	p.rows
+--	FROM sys.tables AS t  
+--JOIN sys.indexes AS i  
+--    ON t.object_id = i.object_id  
+--JOIN sys.partitions AS p
+--    ON i.object_id = p.object_id AND i.index_id = p.index_id   
+--JOIN  sys.partition_schemes AS s   
+--    ON i.data_space_id = s.data_space_id  
+--JOIN sys.partition_functions AS f   
+--    ON s.function_id = f.function_id  
+--LEFT JOIN sys.partition_range_values AS r   
+--    ON f.function_id = r.function_id AND r.boundary_id = p.partition_number  
+--WHERE i.type <= 1 AND SCHEMA_NAME(t.schema_id) = @tableschema AND t.name = @tablename 
+--)
+--SELECT TOP 1 @nextpartitionboundarytodelete =  Boundary_Value, @partitionnumber = partition_number FROM cte_tablepartitioninfo --where rows <> 0 
+--ORDER BY partition_number 
+----SELECT @nextpartitionboundarytodelete'nextpartitionboundarytodelete',@partitionnumber'partitionnumber',@lastprocessedlogid'lastprocessedlogid',@partitionboundarycount'partitionboundarycount'
+
+--IF @nextpartitionboundarytodelete IS NOT NULL AND @lastprocessedlogid >= @nextpartitionboundarytodelete AND @partitionboundarycount > @partitionsretained
+--BEGIN
+--SET @truncatetablestr = 'truncate table ' +@tableschema+'.' +@tablename + ' with (partitions ('+@partitionnumber+'))'
+--select @truncatetablestr
+
+--SET @alterpartationstr = 'alter partition function '+@partitionfunction+'() merge range('+convert(NVARCHAR(10),@nextpartitionboundarytodelete)+')'
+--select @alterpartationstr
+
+----EXECUTE sp_executesql @truncatetablestr
+----EXECUTE sp_executesql @alterpartationstr
+
+--END 
