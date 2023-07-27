@@ -1,5 +1,5 @@
 
-declare @sessionnumber bigint
+declare @sessionnumber bigint,@retaindays tinyint = 30;
 
 with get_oldest_session_to_retain
 as
@@ -9,7 +9,7 @@ sessionnumber,
 startdatetime
 from
 dbo.bpasession with (nolock)
-where datediff(dd,convert(date,startdatetime),convert(date,getdate())) = 30
+where datediff(dd,convert(date,startdatetime),convert(date,getdate())) = @retaindays
 )
 select top 1 @sessionnumber = sessionnumber from get_oldest_session_to_retain
 order by startdatetime 
