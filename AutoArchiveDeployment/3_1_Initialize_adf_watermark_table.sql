@@ -1,11 +1,5 @@
-/****** Script for SelectTopNRows command from SSMS  ******/
---SELECT TOP (1000) [tablename]
---      ,[deltacolumn]
---      ,[last_processed_date]
---      ,[logid]
---  FROM [BPC].[adf_watermark]
-
   /****** Initialize watermark table - [BPC].[adf_watermark] ******/
+
   IF EXISTS (SELECT 1 FROM SYS.tables WHERE name = 'adf_watermark' AND SCHEMA_NAME(SCHEMA_ID) = 'BPC')
   BEGIN
 	IF (SELECT COUNT(*) FROM [BPC].[adf_watermark]) = 0
