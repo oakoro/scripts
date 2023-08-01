@@ -9,7 +9,22 @@ DECLARE @LoggingType BIT,
 	@LoggingTableUnicode NVARCHAR(30) = 'BPASessionLog_Unicode',
 	@SwitchCopySessionLog NVARCHAR(MAX),
 	@CopyStartLogid BIGINT = 20
-	
+
+/*                                          
+Creating Partition logging table
+*/
+IF (OBJECT_ID(N'[DBO].[PartitionAuditLog]',N'U')) IS NULL
+BEGIN
+CREATE TABLE PartitionAuditLog(
+[StepNo] tinyint IDENTITY(1,1),
+[ActionPerformed] varchar(200),
+[TimeStamp] datetime DEFAULT getdate()
+)
+END
+
+/*                                          
+Identify dependants views and drop.
+*/
 DECLARE @schema_bound_views TABLE(viewName SYSNAME)
 INSERT @schema_bound_views
 SELECT object_name(m.object_id) FROM sys.sql_modules m join sys.views v ON m.object_id = v.object_id
@@ -23,6 +38,10 @@ WHILE @int < @count
 BEGIN
 SELECT TOP 1 @view = viewName FROM @schema_bound_views
 SET @str = 'DROP VIEW '+@view
+
+INSERT DBO.PartitionAuditLog([ActionPerformed])
+VALUES(@str);
+
 print (@str)
 --EXEC (@str)
 DELETE @schema_bound_views WHERE viewName = @view
@@ -30,11 +49,17 @@ SET @int = @int + 1
 END
 END
 
+/*                                          
+Identify session log table and switch 
+data to replica table.
+*/
 SELECT @LoggingType = unicodeLogging FROM BPASysConfig
---SET @LoggingType = 1 --Test for Unicode
+SET @LoggingType = 1 --Test for Unicode
 IF @LoggingType = 0
 
-/* Create [dbo].[BPASessionLog_NonUnicodeCopy] Table for Switch */
+BEGIN
+INSERT DBO.PartitionAuditLog([ActionPerformed])
+VALUES('SessionLogTable is '+ @LoggingTableNonUnicode);
 
 SET @SwitchCopySessionLog =
 '
@@ -86,57 +111,21 @@ CREATE NONCLUSTERED INDEX [Index_'+ @LoggingTableNonUnicode +'Copy_sessionnumber
 	[sessionnumber] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY];
 END
+
 ALTER TABLE [dbo].['+@LoggingTableNonUnicode+'] SWITCH TO [dbo].['+@LoggingTableNonUnicode +'Copy];
 
-SET IDENTITY_INSERT [dbo].[' +@LoggingTableNonUnicode +'] ON
-INSERT INTO [dbo].[' +@LoggingTableNonUnicode +']
-           ([logid]
-		   ,[sessionnumber]
-           ,[stageid]
-           ,[stagename]
-           ,[stagetype]
-           ,[processname]
-           ,[pagename]
-           ,[objectname]
-           ,[actionname]
-           ,[result]
-           ,[resulttype]
-           ,[startdatetime]
-           ,[enddatetime]
-           ,[attributexml]
-           ,[automateworkingset]
-           ,[targetappname]
-           ,[targetappworkingset]
-           ,[starttimezoneoffset]
-           ,[endtimezoneoffset])
- SELECT		[logid]
-		   ,[sessionnumber]
-           ,[stageid]
-           ,[stagename]
-           ,[stagetype]
-           ,[processname]
-           ,[pagename]
-           ,[objectname]
-           ,[actionname]
-           ,[result]
-           ,[resulttype]
-           ,[startdatetime]
-           ,[enddatetime]
-           ,[attributexml]
-           ,[automateworkingset]
-           ,[targetappname]
-           ,[targetappworkingset]
-           ,[starttimezoneoffset]
-           ,[endtimezoneoffset]
-FROM [dbo].[' +@LoggingTableNonUnicode +'Copy] WITH (NOLOCK)
-WHERE LOGID >= '+CONVERT(NVARCHAR(20),@CopyStartLogid) +
-' ORDER BY logid DESC
-SET IDENTITY_INSERT [dbo].[' +@LoggingTableNonUnicode +'] OFF
-END
 COMMIT TRAN'
 
+INSERT DBO.PartitionAuditLog([ActionPerformed])
+VALUES(@LoggingTableNonUnicode +' switched');
+
+END
 
 ELSE
+
+BEGIN
+INSERT DBO.PartitionAuditLog([ActionPerformed])
+VALUES('SessionLogTable is '+ @LoggingTableUnicode);
 
 SET @SwitchCopySessionLog = 
 '
@@ -188,59 +177,14 @@ CREATE NONCLUSTERED INDEX [Index_'+ @LoggingTableUnicode +'Copy_sessionnumber] O
 	[sessionnumber] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY];
 END
-ALTER TABLE [dbo].['+@LoggingTableUnicode+'] SWITCH TO [dbo].['+@LoggingTableUnicode +'Copy];
 
-SET IDENTITY_INSERT [dbo].[' +@LoggingTableUnicode +'] ON
-INSERT INTO [dbo].[' +@LoggingTableUnicode +']
-           ([logid]
-		   ,[sessionnumber]
-           ,[stageid]
-           ,[stagename]
-           ,[stagetype]
-           ,[processname]
-           ,[pagename]
-           ,[objectname]
-           ,[actionname]
-           ,[result]
-           ,[resulttype]
-           ,[startdatetime]
-           ,[enddatetime]
-           ,[attributexml]
-           ,[automateworkingset]
-           ,[targetappname]
-           ,[targetappworkingset]
-           ,[starttimezoneoffset]
-           ,[endtimezoneoffset])
- SELECT		[logid]
-		   ,[sessionnumber]
-           ,[stageid]
-           ,[stagename]
-           ,[stagetype]
-           ,[processname]
-           ,[pagename]
-           ,[objectname]
-           ,[actionname]
-           ,[result]
-           ,[resulttype]
-           ,[startdatetime]
-           ,[enddatetime]
-           ,[attributexml]
-           ,[automateworkingset]
-           ,[targetappname]
-           ,[targetappworkingset]
-           ,[starttimezoneoffset]
-           ,[endtimezoneoffset]
-FROM [dbo].[' +@LoggingTableUnicode +'Copy] WITH (NOLOCK)
-WHERE LOGID >= '+CONVERT(NVARCHAR(20),@CopyStartLogid) +
-' ORDER BY logid DESC
-SET IDENTITY_INSERT [dbo].[' +@LoggingTableUnicode +'] OFF
+ALTER TABLE [dbo].['+@LoggingTableUnicode+'] SWITCH TO [dbo].['+@LoggingTableUnicode +'Copy];
 END
 COMMIT TRAN'
 
+INSERT DBO.PartitionAuditLog([ActionPerformed])
+VALUES(@LoggingTableUnicode +' switched'); 
+
+END
 
 print (@SwitchCopySessionLog)
---EXEC (@SwitchCopySessionLog)
-
-
-
-

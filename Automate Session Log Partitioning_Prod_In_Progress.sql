@@ -9,7 +9,22 @@ DECLARE @LoggingType BIT,
 	@LoggingTableUnicode NVARCHAR(30) = 'BPASessionLog_Unicode',
 	@SwitchCopySessionLog NVARCHAR(MAX),
 	@CopyStartLogid BIGINT = 20
-	
+
+/*                                          
+Creating Partition logging table
+*/
+IF (OBJECT_ID(N'[DBO].[PartitionAuditLog]',N'U')) IS NULL
+BEGIN
+CREATE TABLE PartitionAuditLog(
+[StepNo] tinyint IDENTITY(1,1),
+[ActionPerformed] varchar(200),
+[TimeStamp] datetime DEFAULT getdate()
+)
+END
+
+/*                                          
+Identify dependants views and drop.
+*/
 DECLARE @schema_bound_views TABLE(viewName SYSNAME)
 INSERT @schema_bound_views
 SELECT object_name(m.object_id) FROM sys.sql_modules m join sys.views v ON m.object_id = v.object_id
@@ -23,6 +38,10 @@ WHILE @int < @count
 BEGIN
 SELECT TOP 1 @view = viewName FROM @schema_bound_views
 SET @str = 'DROP VIEW '+@view
+
+INSERT DBO.PartitionAuditLog([ActionPerformed])
+VALUES(@str);
+
 print (@str)
 --EXEC (@str)
 DELETE @schema_bound_views WHERE viewName = @view
@@ -31,10 +50,14 @@ END
 END
 
 SELECT @LoggingType = unicodeLogging FROM BPASysConfig
---SET @LoggingType = 1 --Test for Unicode
+SET @LoggingType = 1 --Test for Unicode
 IF @LoggingType = 0
 
 /* Create [dbo].[BPASessionLog_NonUnicodeCopy] Table for Switch */
+
+BEGIN
+INSERT DBO.PartitionAuditLog([ActionPerformed])
+VALUES('SessionLogTable is '+ @LoggingTableNonUnicode);
 
 SET @SwitchCopySessionLog =
 '
@@ -134,9 +157,13 @@ WHERE LOGID >= '+CONVERT(NVARCHAR(20),@CopyStartLogid) +
 SET IDENTITY_INSERT [dbo].[' +@LoggingTableNonUnicode +'] OFF
 END
 COMMIT TRAN'
-
+END
 
 ELSE
+
+BEGIN
+INSERT DBO.PartitionAuditLog([ActionPerformed])
+VALUES('SessionLogTable is '+ @LoggingTableUnicode);
 
 SET @SwitchCopySessionLog = 
 '
@@ -236,7 +263,7 @@ WHERE LOGID >= '+CONVERT(NVARCHAR(20),@CopyStartLogid) +
 SET IDENTITY_INSERT [dbo].[' +@LoggingTableUnicode +'] OFF
 END
 COMMIT TRAN'
-
+END
 
 print (@SwitchCopySessionLog)
 --EXEC (@SwitchCopySessionLog)
