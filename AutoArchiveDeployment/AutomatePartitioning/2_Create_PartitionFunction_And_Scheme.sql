@@ -8,6 +8,7 @@ DECLARE @sessionlogtable NVARCHAR(50)
 DECLARE @nextPartitionID BIGINT --Maximum logid or seed value in BPASessionLog Table
 DECLARE @partitionseedValue BIGINT --Partition function seed value
 
+SET NOCOUNT ON;
 
 /*                                          
 Creating Partition logging table
@@ -15,9 +16,9 @@ Creating Partition logging table
 IF (OBJECT_ID(N'[DBO].[PartitionAuditLog]',N'U')) IS NULL
 BEGIN
 CREATE TABLE PartitionAuditLog(
-[StepNo] tinyint IDENTITY(1,1),
-[ActionPerformed] varchar(200),
-[TimeStamp] datetime DEFAULT getdate()
+[StepNo] TINYINT IDENTITY(1,1),
+[ActionPerformed] VARCHAR(200),
+[TimeStamp] DATETIME DEFAULT getdate()
 )
 END
 

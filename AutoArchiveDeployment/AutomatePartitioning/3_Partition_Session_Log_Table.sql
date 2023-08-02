@@ -4,15 +4,16 @@ DECLARE @loggingType BIT
 DECLARE @sessionlogtable NVARCHAR(50)
 DECLARE @sessionlogindex NVARCHAR(100)
 
+SET NOCOUNT ON;
 /*                                          
 Creating Partition logging table
 */
 IF (OBJECT_ID(N'[DBO].[PartitionAuditLog]',N'U')) IS NULL
 BEGIN
 CREATE TABLE PartitionAuditLog(
-[StepNo] tinyint IDENTITY(1,1),
-[ActionPerformed] varchar(200),
-[TimeStamp] datetime DEFAULT getdate()
+[StepNo] TINYINT IDENTITY(1,1),
+[ActionPerformed] VARCHAR(200),
+[TimeStamp] DATETIME DEFAULT getdate()
 )
 END
 
@@ -23,9 +24,9 @@ SET @sessionlogtable = 'BPASessionLog_NonUnicode'
 ELSE SET @sessionlogtable = 'BPASessionLog_Unicode'
 
 
-DECLARE PartitionSessionLogTable Cursor
+DECLARE PartitionSessionLogTable CURSOR
 FOR
-SELECT name FROM SYS.indexes WHERE OBJECT_NAME(OBJECT_ID) = @sessionlogtable --IN ('BPASessionLog_NonUnicode','BPASessionLog_Unicode')
+SELECT name FROM SYS.indexes WHERE OBJECT_NAME(OBJECT_ID) = @sessionlogtable 
 
 OPEN PartitionSessionLogTable
 
