@@ -9,6 +9,19 @@ BluePrims Version supported	:	V5+, V6+
 Warning						:	
 */
 
+--select * from dbo.BPASession with (nolock)
+--where sessionnumber in (
+--204644,204643,204642,204645
+--)
+
+--select * from BPAStatus
+
+--update dbo.BPASession
+--set statusid = 3
+--where sessionnumber in (
+--204644,204643,204642,204645
+--) and statusid =
+
 
 
  -- Set all 'Stopping' sessions to be 'Stopped' status

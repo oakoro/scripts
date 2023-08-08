@@ -28,7 +28,7 @@ ON i.[object_id] = o.[object_id]
 WHERE ps.database_id = DB_ID()
 AND ps.page_count > 500 AND ps.avg_fragmentation_in_percent > 29.99
 AND OBJECT_NAME(ps.OBJECT_ID) NOT LIKE '%PRE65' AND i.[name] IS NOT NULL
-ORDER BY OBJECT_NAME(ps.OBJECT_ID) ,ps.avg_fragmentation_in_percent DESC OPTION (RECOMPILE);
+ORDER BY ps.avg_fragmentation_in_percent DESC,OBJECT_NAME(ps.OBJECT_ID)   OPTION (RECOMPILE);
 
 OPEN defrag_index
 
