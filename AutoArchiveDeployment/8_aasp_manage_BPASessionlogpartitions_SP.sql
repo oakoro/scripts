@@ -23,7 +23,7 @@ EXECUTE [BPC].[aasp_delete_copied_Sessionlog_partition]
    @tableschema = ''dbo''
   ,@tablename = ''BPASessionLog_NonUnicode''
   ,@partitionfunction = ''PF_Dynamic_NU''
-  ,@partitionsretained = 6
+  ,@partitionsretained = 5
   '
 
 EXECUTE SP_EXECUTESQL @aasp_manage_BPASessionlogpartitions
