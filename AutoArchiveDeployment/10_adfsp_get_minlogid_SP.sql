@@ -31,7 +31,7 @@ EXEC sp_EXECutesql @sqlCommandWM, @ParmDefinition, @tableName = @tableName, @min
 
 
 
-SET @sqlCommandActual = N''SELECT TOP 1 @minlogidActual = logid FROM dbo.''+@tableName +'' WITH (nolock) WHERE logid > ''+CONVERT(NVARCHAR(20),@minlogidWMOUT) +'' ORDER BY logid''
+SET @sqlCommandActual = N''SELECT TOP 1 @minlogidActual = logid FROM dbo.''+@tableName +'' WITH (nolock) WHERE logid >= ''+CONVERT(NVARCHAR(20),@minlogidWMOUT) +'' ORDER BY logid''
 SET @ParmDefinition1 = N''@tableName NVARCHAR(255), @minlogidActual BIGINT OUTPUT'';
 EXEC sp_EXECutesql @sqlCommandActual, @ParmDefinition1, @tableName = @tableName, @minlogidActual = @minlogidActualOUT OUTPUT;
 
@@ -76,7 +76,7 @@ EXEC sp_EXECutesql @sqlCommandWM, @ParmDefinition, @tableName = @tableName, @min
 
 
 
-SET @sqlCommandActual = N''SELECT TOP 1 @minlogidActual = logid FROM dbo.''+@tableName +'' WITH (nolock) WHERE logid > ''+CONVERT(NVARCHAR(20),@minlogidWMOUT) +'' ORDER BY logid''
+SET @sqlCommandActual = N''SELECT TOP 1 @minlogidActual = logid FROM dbo.''+@tableName +'' WITH (nolock) WHERE logid >= ''+CONVERT(NVARCHAR(20),@minlogidWMOUT) +'' ORDER BY logid''
 SET @ParmDefinition1 = N''@tableName NVARCHAR(255), @minlogidActual BIGINT OUTPUT'';
 EXEC sp_EXECutesql @sqlCommandActual, @ParmDefinition1, @tableName = @tableName, @minlogidActual = @minlogidActualOUT OUTPUT;
 
