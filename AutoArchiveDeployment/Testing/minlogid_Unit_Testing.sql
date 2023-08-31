@@ -1,38 +1,52 @@
-DECLARE  @tableName varchar(255) = 'BPASessionLog_NonUnicode'
---SELECT logid as 'minlogidWMark' FROM bpc.adf_watermark where tableName = @tableName
---SELECT top 1 logid 'ActualMinLogid' 
---from
---dbo.BPASessionLog_NonUnicode with (nolock) 
- 
---order by logid 
+select top 1 logid from [dbo].[BPASessionLog_NonUnicode]
+where logid > 330000000
+--go
+--select top 1 logid from [dbo].[BPASessionLog_NonUnicode]
+----where logid > 330000000 
+--order by logid
 
-DECLARE @sqlCommand NVARCHAR(1000),
+EXEC [BPC].[adfsp_get_minlogidTestOA] 'BPASessionLog_NonUnicode'
+
+
+-- ==============================================================================
+-- Description: Get minimum logid to copy
+-- Usage: EXEC [BPC].[adfsp_get_minlogid] 'BPASessionLog_NonUnicode'
+-- ==============================================================================
+
+declare
+	 @tableName NVARCHAR(255) = 'BPASessionLog_NonUnicode'
+
+
+
+
+DECLARE @sqlCommandWM NVARCHAR(1000),
 	@ParmDefinition NVARCHAR(500),
 	@minlogidWM NVARCHAR(20),
 	@minlogidWMOUT BIGINT,
-	@sqlCommand1 NVARCHAR(1000),
+	@sqlCommandActual NVARCHAR(1000),
 	@ParmDefinition1 NVARCHAR(500),
 	@minlogidActual BIGINT,
 	@minlogidActualOUT BIGINT,
 	@minLogid BIGINT
 
---SET @sqlCommand = N'SELECT logid as ''minlogidWMark'' FROM bpc.adf_watermark where tableName = ''' + @tableName + ''';'
-SET @sqlCommand = N'SELECT @minlogidWM = logid  FROM bpc.adf_watermark where tableName = ''' + @tableName + ''';'
-SET @ParmDefinition = N'@tableName varchar(255), @minlogidWM BIGINT OUTPUT';
-EXEC sp_EXECutesql @sqlCommand, @ParmDefinition, @tableName = @tableName, @minlogidWM = @minlogidWMOUT OUTPUT;
-SELECT @minlogidWMOUT '@minlogidWMOUT'
---DECLARE @a BIGINT
---SELECT top 1 @a = logid   from dbo.BPASessionLog_NonUnicode with (nolock) where logid > 320000000
---SELECT @a
 
-SET @sqlCommand1 = N'SELECT top 1 @minlogidActual = logid from dbo.'+@tableName +' with (nolock) where logid > '+CONVERT(NVARCHAR(20),@minlogidWMOUT)
-SET @ParmDefinition1 = N'@tableName varchar(255), @minlogidActual BIGINT OUTPUT';
-EXEC sp_EXECutesql @sqlCommand1, @ParmDefinition1, @tableName = @tableName, @minlogidActual = @minlogidActualOUT OUTPUT;
-SELECT @minlogidActualOUT '@minlogidActualOUT'
+SET @sqlCommandWM = N'SELECT @minlogidWM = logid  FROM bpc.adf_watermark WHERE tableName = ''' + @tableName + ''';'
+SET @ParmDefinition = N'@tableName NVARCHAR(255), @minlogidWM BIGINT OUTPUT';
+EXEC sp_EXECutesql @sqlCommandWM, @ParmDefinition, @tableName = @tableName, @minlogidWM = @minlogidWMOUT OUTPUT;
+select @minlogidWMOUT '@minlogidWMOUT'
+
+
+SET @sqlCommandActual = N'SELECT TOP 1 @minlogidActual = logid FROM dbo.'+@tableName +' WITH (nolock) WHERE logid > '+CONVERT(NVARCHAR(20),@minlogidWMOUT) +' ORDER BY logid'
+SET @ParmDefinition1 = N'@tableName NVARCHAR(255), @minlogidActual BIGINT OUTPUT';
+EXEC sp_EXECutesql @sqlCommandActual, @ParmDefinition1, @tableName = @tableName, @minlogidActual = @minlogidActualOUT OUTPUT;
+select @minlogidActualOUT '@minlogidActualOUT'
 
 IF @minlogidActualOUT > @minlogidWMOUT
 BEGIN
-SELECT @minlogidActualOUT as 'minlogid'
+SELECT @minlogidActualOUT AS 'minlogid'
 END
 ELSE
-SELECT @minlogidWMOUT as 'minlogid'
+SELECT @minlogidWMOUT AS 'minlogid'
+GO
+
+

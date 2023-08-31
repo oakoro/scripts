@@ -1,50 +1,60 @@
-/****** Object:  StoredProcedure [BPC].[adfsp_get_maxlogid]    Script Date: 16/08/2023 12:23:59 ******/
-SET ANSI_NULLS ON
-GO
+	--EXEC [BPC].[adfsp_get_minlogid] 'BPASessionLog_NonUnicode'
+	--SELECT TOP 1 logid as 'ActualMaxLogid' from dbo.BPASessionLog_NonUnicode order by logid desc
+	--EXEC [BPC].[adfsp_get_maxlogidNEW] @minlogid = 5
+	[BPC].[adfsp_get_maxlogidNEWv2] @minlogid = 25
 
-SET QUOTED_IDENTIFIER ON
-GO
+	DECLARE @minlogid BIGINT = 25, @rowamt BIGINT-- = 6
+	DECLARE @addrow BIGINT
+	DECLARE @mxid BIGINT =  (SELECT MAX(logid) FROM [dbo].[BPASessionLog_NonUnicode] with (nolock))
+	DECLARE @maxLogid BIGINT
 
+	IF @rowamt IS NOT NULL --OR @rowamt <> 0 
+		BEGIN
+		SET @addrow = @minlogid + @rowamt
+		END
+		ELSE SET @addrow = 0
 
+	SELECT @addrow '@addrow'
+	SELECT @mxid '@mxid'
 
--- ==============================================================================
--- Description: Get maximum logid from BPASessionLog_NonUnicode table to copy SPs
--- ==============================================================================
+	--IF @mxid IS NOT NULL AND @minlogid = @addrow
+	IF @mxid IS NOT NULL AND @addrow = 0
+		BEGIN
+			--IF  @minlogid = @addrow
+			--BEGIN
+			SET @maxLogid = @mxid
+			SELECT @maxLogid  as 'MaxLogid'
+			END
+			else
+	IF @mxid IS NOT NULL AND @addrow <> 0
+		BEGIN
+		IF @mxid >= @addrow
+			BEGIN
+			SET @maxLogid = @addrow
+			SELECT @maxLogid  as 'MaxLogid'
+			END
+		END
+			--ELSE 
+			--IF @mxid IS NOT NULL AND @mxid <= @addrow
+			--BEGIN
+			--SET @maxLogid = @mxid
+			--SELECT @maxLogid  as 'MaxLogid'
+			--END
+			--ELSE
+			--BEGIN
+			--SET @maxLogid = @addrow
+			--SELECT @maxLogid as 'MaxLogid'
+			--END
+		--END
+		else
+IF @mxid IS NULL
+		 
+		BEGIN
+		SET @maxLogid = @minlogid
+		SELECT @maxLogid as 'MaxLogid'
+		END
 
---ALTER PROCEDURE [BPC].[adfsp_get_maxlogid1]
---(
---	 @minlogid bigint, @rowamt bigint
---)
---AS
---BEGIN
-DECLARE @minlogid bigint = 110357872, @rowamt bigint = 10
+		SELECT @rowamt '@rowamt', @addrow '@addrow', @minlogid '@minlogid', @maxLogid '@maxLogid',@mxid'@mxid'
 
-    -- SET NOCOUNT ON added to prevent extra result sets from
-    -- interfering with SELECT statements.
-SET NOCOUNT ON
-
-declare @mxid bigint = (SELECT MAX(logid) FROM [dbo].[BPASessionLog_NonUnicodeCopy] with (nolock))
-IF @mxid IS NOT NULL
-BEGIN
-declare @addrow bigint = (SELECT @minlogid + @rowamt)
-SELECT @addrow '@addrow'
-SELECT @mxid '@mxid'
-if  (Select @mxid) >= (Select @addrow) 
---IF @mxid >= @addrow
-begin
-
-Select @addrow  as 'MaxLogid'
-end
-else 
-begin
-
-Select @mxid as 'MaxLogid'
-end
-END
-ELSE
-BEGIN
-SET @mxid = 0
-Select @mxid as 'MaxLogid'
-END
-
-
+--110,357,872
+--10,000,000
