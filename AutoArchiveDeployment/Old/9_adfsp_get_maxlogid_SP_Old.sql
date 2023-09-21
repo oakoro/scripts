@@ -22,20 +22,8 @@ AS
 
 SET NOCOUNT ON	
 	
-	DECLARE @addrow BIGINT, @maxLogid BIGINT, @LoggingType BIT,
-			@sessionlogtable NVARCHAR(50), @mxidStr NVARCHAR(400),
-			@mxidout BIGINT, @param NVARCHAR(255) = ''@mxid BIGINT OUTPUT'' 
-	
-
-	SELECT @LoggingType = unicodeLogging FROM BPASysConfig
-	
-	IF @LoggingType = 0
-	SET @sessionlogtable = ''BPASessionLog_NonUnicode''
-	ELSE SET @sessionlogtable = ''BPASessionLog_Unicode''
-
-	SET @mxidStr = ''SELECT @mxid = MAX(logid) FROM [dbo].''+QUOTENAME(@sessionlogtable)+'' with (nolock)''
-	
-	EXEC sp_executeSQL @mxidStr, @param, @mxid = @mxidout OUTPUT;
+	DECLARE @addrow BIGINT, @maxLogid BIGINT
+	DECLARE @mxid BIGINT =  (SELECT MAX(logid) FROM [dbo].[BPASessionLog_NonUnicode] with (nolock))
 	
 
 	IF @rowamt IS NOT NULL
@@ -44,23 +32,23 @@ SET NOCOUNT ON
 		END
 		ELSE SET @addrow = 0
 
-	IF @mxidout IS NOT NULL AND @addrow = 0
+	IF @mxid IS NOT NULL AND @addrow = 0
 		BEGIN
-			SET @maxLogid = @mxidout
+			SET @maxLogid = @mxid
 		END
-		ELSE IF @mxidout IS NOT NULL AND @addrow <> 0
+		ELSE IF @mxid IS NOT NULL AND @addrow <> 0
 		BEGIN
-			IF @mxidout >= @addrow
+			IF @mxid >= @addrow
 			BEGIN
 			SET @maxLogid = @addrow
 			END
-			ELSE SET @maxLogid = @mxidout
+			ELSE SET @maxLogid = @mxid
 		END 
-		ELSE IF @mxidout IS NULL
+		ELSE IF @mxid IS NULL
 		SET @maxLogid = @minlogid
 		
 SELECT @maxLogid as ''MaxLogid''	
-SET NOCOUNT OFF		
+SET NOCOUNT OFF	
 '
 
 EXECUTE SP_EXECUTESQL @adfsp_get_maxlogid
@@ -78,7 +66,6 @@ DECLARE @alter_adfsp_get_maxlogid NVARCHAR(MAX) = '
 -- EXEC [BPC].[adfsp_get_maxlogid] 330000000,  10000000
 -- If chunksize is NOT provided: 
 -- EXEC [BPC].[adfsp_get_maxlogid] 330000000
--- Automate for both unicode and non-unicode
 -- ====================================================================================
 
 ALTER PROCEDURE [BPC].[adfsp_get_maxlogid]
@@ -89,20 +76,8 @@ AS
 
 SET NOCOUNT ON	
 	
-	DECLARE @addrow BIGINT, @maxLogid BIGINT, @LoggingType BIT,
-			@sessionlogtable NVARCHAR(50), @mxidStr NVARCHAR(400),
-			@mxidout BIGINT, @param NVARCHAR(255) = ''@mxid BIGINT OUTPUT'' 
-	
-
-	SELECT @LoggingType = unicodeLogging FROM BPASysConfig
-	
-	IF @LoggingType = 0
-	SET @sessionlogtable = ''BPASessionLog_NonUnicode''
-	ELSE SET @sessionlogtable = ''BPASessionLog_Unicode''
-
-	SET @mxidStr = ''SELECT @mxid = MAX(logid) FROM [dbo].''+QUOTENAME(@sessionlogtable)+'' with (nolock)''
-	
-	EXEC sp_executeSQL @mxidStr, @param, @mxid = @mxidout OUTPUT;
+	DECLARE @addrow BIGINT, @maxLogid BIGINT
+	DECLARE @mxid BIGINT =  (SELECT MAX(logid) FROM [dbo].[BPASessionLog_NonUnicode] with (nolock))
 	
 
 	IF @rowamt IS NOT NULL
@@ -111,19 +86,19 @@ SET NOCOUNT ON
 		END
 		ELSE SET @addrow = 0
 
-	IF @mxidout IS NOT NULL AND @addrow = 0
+	IF @mxid IS NOT NULL AND @addrow = 0
 		BEGIN
-			SET @maxLogid = @mxidout
+			SET @maxLogid = @mxid
 		END
-		ELSE IF @mxidout IS NOT NULL AND @addrow <> 0
+		ELSE IF @mxid IS NOT NULL AND @addrow <> 0
 		BEGIN
-			IF @mxidout >= @addrow
+			IF @mxid >= @addrow
 			BEGIN
 			SET @maxLogid = @addrow
 			END
-			ELSE SET @maxLogid = @mxidout
+			ELSE SET @maxLogid = @mxid
 		END 
-		ELSE IF @mxidout IS NULL
+		ELSE IF @mxid IS NULL
 		SET @maxLogid = @minlogid
 		
 SELECT @maxLogid as ''MaxLogid''	
