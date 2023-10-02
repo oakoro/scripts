@@ -39,18 +39,18 @@ BEGIN
 IF NOT EXISTS(
 SELECT prv.value
 FROM sys.partition_functions AS pf
-join sys.partition_range_values AS prv ON pf.function_id = prv.function_id
+JOIN sys.partition_range_values AS prv ON pf.function_id = prv.function_id
 WHERE pf.name = @partitionfunction AND prv.value = @nextPartitionID
 )
 BEGIN
-alter partition scheme PS_Dynamic_NU next used [primary];
-alter partition function PF_Dynamic_NU() split range(@nextPartitionID);
+ALTER PARTITION SCHEME PS_Dynamic_NU NEXT used [primary];
+ALTER PARTITION FUNCTION PF_Dynamic_NU() SPLIT RANGE(@nextPartitionID);
 END
 ELSE
 BEGIN
 PRINT 'Partition already exists';
 END
 END
-GO
+
 
 
