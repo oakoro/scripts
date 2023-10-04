@@ -16,7 +16,7 @@ GO
 -- Automate for unicode and non-unicode
 -- ==============================================
 
-ALTER PROCEDURE [BPC].[aasp_create_New_Sessionlog_partition]
+ALTER PROCEDURE [BPC].[aasp_create_New_Sessionlog]
 @partitionfunction NVARCHAR(50) = 'PF_Dynamic_NU'
 
 AS
@@ -47,6 +47,8 @@ INNER JOIN sys.partition_functions pf
 	ON ps.function_id = pf.function_id
 WHERE pf.name = @partitionfunction AND t.name = @sessionlogtable
 
+
+
 ---Test if partitiopn already exist and create the next partiton
 IF @nextPartitionID IS NOT NULL 
 BEGIN
@@ -58,18 +60,21 @@ WHERE pf.name = @partitionfunction AND prv.value = @nextPartitionID
 )
 BEGIN
 SET @strnextusedpartitionprimary = 'ALTER PARTITION SCHEME '+@partitionscheme +' NEXT used [primary];'
-SET @str@alterpartation = 'ALTER PARTITION FUNCTION '+@partitionfunction +'() SPLIT RANGE('+convert(nvarchar(50),@nextPartitionID)+');'
+SET @str@alterpartation = 'ALTER PARTITION FUNCTION '+@partitionfunction +'() SPLIT RANGE('+CONVERT(NVARCHAR(50),@nextPartitionID)+');'
 
+print @strnextusedpartitionprimary
+print @str@alterpartation
 EXEC sp_executesql @strnextusedpartitionprimary
 EXEC sp_executesql @str@alterpartation
---ALTER PARTITION SCHEME PS_Dynamic_NU NEXT used [primary];
---ALTER PARTITION FUNCTION PF_Dynamic_NU() SPLIT RANGE(@nextPartitionID);
+
 END
 ELSE
 BEGIN
 PRINT 'Partition already exists';
 END
 END
+
+
 
 
 

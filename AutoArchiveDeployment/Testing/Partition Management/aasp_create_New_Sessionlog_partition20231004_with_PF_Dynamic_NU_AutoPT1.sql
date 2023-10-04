@@ -16,8 +16,8 @@ GO
 -- Automate for unicode and non-unicode
 -- ==============================================
 
-ALTER PROCEDURE [BPC].[aasp_create_New_Sessionlog_partition]
-@partitionfunction NVARCHAR(50) = 'PF_Dynamic_NU'
+ALTER PROCEDURE [BPC].[aasp_create_New_Sessionlog_partition20231004]
+@partitionfunction NVARCHAR(50) = 'PF_Dynamic_NU_AutoPT1'--'PF_Dynamic_NU'
 
 AS
 
@@ -31,7 +31,7 @@ DECLARE @nextPartitionID BIGINT,
 SELECT @LoggingType = unicodeLogging FROM BPASysConfig
 	
 	IF @LoggingType = 0
-	SET @sessionlogtable = 'BPASessionLog_NonUnicode'
+	SET @sessionlogtable = 'BPASessionLog_NonUnicode_AutoPT'--'BPASessionLog_NonUnicode'
 	ELSE SET @sessionlogtable = 'BPASessionLog_Unicode'
 
 SELECT @nextPartitionID = IDENT_CURRENT(@sessionlogtable)
@@ -47,6 +47,8 @@ INNER JOIN sys.partition_functions pf
 	ON ps.function_id = pf.function_id
 WHERE pf.name = @partitionfunction AND t.name = @sessionlogtable
 
+select @nextPartitionID
+
 ---Test if partitiopn already exist and create the next partiton
 IF @nextPartitionID IS NOT NULL 
 BEGIN
@@ -60,6 +62,8 @@ BEGIN
 SET @strnextusedpartitionprimary = 'ALTER PARTITION SCHEME '+@partitionscheme +' NEXT used [primary];'
 SET @str@alterpartation = 'ALTER PARTITION FUNCTION '+@partitionfunction +'() SPLIT RANGE('+convert(nvarchar(50),@nextPartitionID)+');'
 
+PRINT @strnextusedpartitionprimary
+PRINT @str@alterpartation
 EXEC sp_executesql @strnextusedpartitionprimary
 EXEC sp_executesql @str@alterpartation
 --ALTER PARTITION SCHEME PS_Dynamic_NU NEXT used [primary];
@@ -70,6 +74,11 @@ BEGIN
 PRINT 'Partition already exists';
 END
 END
+
+
+--DECLARE @strnextusedpartitionprimary NVARCHAR(200),@partitionscheme NVARCHAR(50) = 'TEST'
+--SET @strnextusedpartitionprimary = 'ALTER PARTITION SCHEME '+@partitionscheme +' NEXT used [primary];'
+--PRINT @strnextusedpartitionprimary;
 
 
 

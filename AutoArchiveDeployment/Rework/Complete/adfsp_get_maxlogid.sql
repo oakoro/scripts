@@ -23,7 +23,7 @@ SET NOCOUNT ON
 	DECLARE @addrow BIGINT, @maxLogid BIGINT, @LoggingType BIT,
 			@sessionlogtable NVARCHAR(50), @mxidStr NVARCHAR(400),
 			@mxidout BIGINT, @param NVARCHAR(255) = '@mxid BIGINT OUTPUT' 
-	--DECLARE @mxid BIGINT =  (SELECT MAX(logid) FROM [dbo].[BPASessionLog_NonUnicode] with (nolock))
+	
 
 	SELECT @LoggingType = unicodeLogging FROM BPASysConfig
 	
