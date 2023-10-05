@@ -1,20 +1,19 @@
 /****** Create [BPC].[aasp_delete_copied_Sessionlog_partition] Stored Procedure ******/
 
-
+IF (OBJECT_ID(N'[BPC].[aasp_delete_copied_Sessionlog_partition]',N'P')) IS NULL
 BEGIN
 DECLARE @aasp_delete_copied_Sessionlog_partition NVARCHAR(MAX) = '
 
 -- =============================================
 -- Description: Delete copied partition in BPASessionLog_NonUnicode table
--- Script execution Example: [BPC].[aasp_delete_copied_Sessionlog_partition] @partitionsretained = 2
+-- Script execution Example: BPC.aasp_delete_copied_Sessionlog_partition ''dbo'',''BPASessionLog_NonUnicode'',''PF_Dynamic_NU'',2
 -- variable description: 
---	@tableschema - Table Schema, @sessionlogtable - Partitioned table name, 
+--	@tableschema - Table Schema, @tablename - Partitioned table name, 
 --  @partitionfunction - partition function, @partitionsretained - No of retained partitions
--- Automate for unicode and non-unicode
 -- =============================================
 
-CREATE OR ALTER PROCEDURE [BPC].[aasp_delete_copied_Sessionlog_partition] 
-@tableschema NVARCHAR(20) = ''DBO'',@partitionfunction NVARCHAR(50) = ''PF_Dynamic_NU'', @partitionsretained TINYINT
+CREATE PROCEDURE [BPC].[aasp_delete_copied_Sessionlog_partition]
+@tableschema NVARCHAR(20), @tablename NVARCHAR(400),@partitionfunction NVARCHAR(50),@partitionsretained TINYINT
 
 AS
 
@@ -24,18 +23,8 @@ DECLARE @partitionnumber NVARCHAR(5) -- Partition number to delete
 DECLARE @lastprocessedlogid BIGINT -- Last logid copied to data lake
 DECLARE @partitionboundarycount TINYINT -- Existing table partitions
 DECLARE @alterpartationstr NVARCHAR(200) -- Partition delete script
-DECLARE @LoggingType BIT -- Session log table type
-DECLARE @sessionlogtable NVARCHAR(50) -- Session log table name
 
-SELECT @LoggingType = unicodeLogging FROM BPASysConfig
-	
-	IF @LoggingType = 0
-	SET @sessionlogtable = ''BPASessionLog_NonUnicode''
-	ELSE SET @sessionlogtable = ''BPASessionLog_Unicode''
-
-
-
-SELECT @lastprocessedlogid = logid FROM [BPC].[adf_watermark] WHERE tablename = @sessionlogtable;
+SELECT @lastprocessedlogid = logid FROM [BPC].[adf_watermark] WHERE tablename = @tablename;
 
 SELECT @partitionboundarycount = COUNT(*) FROM sys.partition_range_values r JOIN sys.partition_functions f ON r.function_id = f.function_id
 WHERE f.name = @partitionfunction 
@@ -58,7 +47,7 @@ JOIN sys.partition_functions AS f
     ON s.function_id = f.function_id  
 LEFT JOIN sys.partition_range_values AS r   
     ON f.function_id = r.function_id AND r.boundary_id = p.partition_number  
-WHERE i.type <= 1 AND SCHEMA_NAME(t.schema_id) = @tableschema AND t.name = @sessionlogtable 
+WHERE i.type <= 1 AND SCHEMA_NAME(t.schema_id) = @tableschema AND t.name = @tablename 
 )
 SELECT TOP 1 @nextpartitionboundarytodelete =  Boundary_Value, @partitionnumber = partition_number FROM cte_tablepartitioninfo 
 ORDER BY partition_number 
@@ -66,16 +55,16 @@ ORDER BY partition_number
 
 IF @nextpartitionboundarytodelete IS NOT NULL AND @lastprocessedlogid >= @nextpartitionboundarytodelete AND @partitionboundarycount > @partitionsretained
 BEGIN
-SET @truncatetablestr = ''TRUNCATE TABLE '' +@tableschema+''.'' +@sessionlogtable + '' WITH (PARTITIONS (''+@partitionnumber+''))''
+SET @truncatetablestr = ''truncate table '' +@tableschema+''.'' +@tablename + '' with (partitions (''+@partitionnumber+''))''
 
 
-SET @alterpartationstr = ''ALTER PARTITION FUNCTION ''+@partitionfunction+''() MERGE RANGE(''+CONVERT(NVARCHAR(50),@nextpartitionboundarytodelete)+'')''
+SET @alterpartationstr = ''alter partition function ''+@partitionfunction+''() merge range(''+convert(NVARCHAR(5),@nextpartitionboundarytodelete)+'')''
+
 
 EXECUTE sp_executesql @truncatetablestr
 EXECUTE sp_executesql @alterpartationstr
 
-
-END'
+END' 
 
 EXECUTE SP_EXECUTESQL @aasp_delete_copied_Sessionlog_partition
 END
