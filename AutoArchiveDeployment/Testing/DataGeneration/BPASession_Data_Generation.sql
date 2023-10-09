@@ -1,8 +1,16 @@
-while (select count(*) from [dbo].[BPASession]) < 100
-begin
-declare @starterresourceid nvarchar(100)  
-SELECT TOP 1 @starterresourceid = [resourceid] FROM [rpa-database].[dbo].[BPAResource] ORDER BY NEWID()
-select @starterresourceid
+IF (SELECT @@SERVERNAME) = 'bpc-sql-x2hpo4kjv2qaa'
+BEGIN
+WHILE (SELECT COUNT(*) FROM [dbo].[BPASession]) < 200
+BEGIN
+DECLARE @starterresourceid NVARCHAR(50),@processid NVARCHAR(50), @starteruserid NVARCHAR(50),
+		@statusid TINYINT, @laststage NVARCHAR(50)
+SELECT TOP 1 @starterresourceid = [resourceid] FROM [dbo].[BPAResource] ORDER BY NEWID()
+SELECT TOP 1 @processid = [processid] FROM [dbo].[BPAProcess] ORDER BY NEWID()
+SELECT TOP 1 @starteruserid = [userid] FROM [dbo].[BPAUser] ORDER BY NEWID()
+SELECT TOP 1 @statusid = [statusid] FROM [dbo].[BPAStatus] ORDER BY NEWID()
+SELECT @laststage = CHOOSE ( FLOOR(RAND()*3)+1, 'Acquire Lock', 'Activate', 'Add Column: Publication Date', 'Add Unsuccessful to Queue',
+						'Add To Queue','Add Winners to Queue','Append Index Column','Append Rows to Collection Final Results');
+--select @starterresourceid,@processid,@starteruserid,@statusid,@laststage
 INSERT INTO [dbo].[BPASession]
            ([sessionid]
            ,[startdatetime]
@@ -29,12 +37,12 @@ INSERT INTO [dbo].[BPASession]
            (NEWID()
            ,GETDATE()
            ,Null
-           ,'740FEB4A-58B8-4376-931B-0197F16920C3'
+           ,@processid
            ,@starterresourceid
-           ,'F4E80D39-38C8-49BF-8A34-E7442FA64993'
-           ,'15B22D86-2054-4923-B552-65CF32AE59E8'
+           ,@starteruserid
+           ,@starterresourceid
            ,Null
-           ,4
+           ,@statusid
            ,Null
            ,Null
            ,Null
@@ -42,11 +50,11 @@ INSERT INTO [dbo].[BPASession]
            ,Null
            ,Null
            ,GETDATE()
-           ,'Start'
+           ,@laststage
            ,300
            ,3600
            ,3600
            ,3600)
-end
+END
 
-
+END
