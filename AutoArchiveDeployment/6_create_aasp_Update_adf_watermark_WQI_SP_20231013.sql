@@ -1,11 +1,10 @@
-/****** Object:  StoredProcedure [BPC].[aasp_Update_adf_watermark_WQI]    Script Date: 23/10/2023 20:42:18 ******/
-SET ANSI_NULLS ON
-GO
+/****** Create [BPC].[aasp_Update_adf_watermark_WQI] Stored Procedure ******/
 
-SET QUOTED_IDENTIFIER ON
-GO
+IF (OBJECT_ID(N'[BPC].[aasp_Update_adf_watermark_WQI]',N'P')) IS NULL
+BEGIN
+DECLARE @aasp_Update_adf_watermark_WQI NVARCHAR(MAX) = 
 
-
+'
 -- =============================================
 -- Description: Updates adf watermark table for Workqueueitem
 -- variable description: 
@@ -25,7 +24,8 @@ BEGIN
     UPDATE [BPC].[adf_watermark] SET last_processed_date = @last_processed_date
     WHERE tablename = @tablename
 
-END
-GO
+END'
 
+EXECUTE SP_EXECUTESQL @aasp_Update_adf_watermark_WQI
+END
 

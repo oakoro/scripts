@@ -1,24 +1,35 @@
-/****** Create [BPC].[adfsp_update_watermark_sessionlog] Stored Procedure ******/
+/****** Object:  StoredProcedure [BPC].[adfsp_update_watermark_sessionlog]    Script Date: 23/10/2023 20:10:12 ******/
+SET ANSI_NULLS ON
+GO
 
-IF (OBJECT_ID(N'[BPC].[adfsp_update_watermark_sessionlog]',N'P')) IS NULL
-BEGIN
-DECLARE @adfsp_update_watermark_sessionlog NVARCHAR(MAX) = '
+SET QUOTED_IDENTIFIER ON
+GO
+
+
 
 -- ==============================================================================
 -- Description: Update adf watermark table after copy from BPASessionLog_NonUnicode table
 -- ==============================================================================
 
-CREATE PROC [BPC].[adfsp_update_watermark_sessionlog]
- @logid bigint,
- @tableName varchar(255)
+CREATE OR ALTER PROCEDURE [BPC].[adfsp_update_watermark_sessionlog]
+ @logid BIGINT
+
  AS
 
  BEGIN
+	DECLARE @LoggingType BIT,@sessionlogtable NVARCHAR(50)
+
+	SELECT @LoggingType = unicodeLogging FROM BPASysConfig
+	
+	IF @LoggingType = 0
+	SET @sessionlogtable = 'BPASessionLog_NonUnicode'
+	ELSE SET @sessionlogtable = 'BPASessionLog_Unicode'
+
    UPDATE bpc.adf_watermark
    SET logid = @logid, 
    last_processed_date = GETDATE()
-   WHERE tableName = @tableName
- END'
+   WHERE tableName = @sessionlogtable
+ END
+GO
 
- EXECUTE SP_EXECUTESQL @adfsp_update_watermark_sessionlog
-END
+

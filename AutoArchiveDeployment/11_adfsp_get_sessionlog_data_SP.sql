@@ -1,16 +1,19 @@
-/****** Create [BPC].[adfsp_get_sessionlog_data] Stored Procedure ******/
+/****** Object:  StoredProcedure [BPC].[adfsp_get_sessionlog_data]    Script Date: 23/10/2023 19:24:25 ******/
+SET ANSI_NULLS ON
+GO
 
-IF (OBJECT_ID(N'[BPC].[adfsp_get_sessionlog_data]',N'P')) IS NULL
-BEGIN
-DECLARE @adfsp_get_sessionlog_data NVARCHAR(MAX) = '
+SET QUOTED_IDENTIFIER ON
+GO
+
+
 
 -- ==============================================================================
--- Description: Copy data from BPASessionLog_NonUnicode table to ADLS
+-- Description: Copy data from session log data to ADLS
 -- ==============================================================================
 
-CREATE PROCEDURE [BPC].[adfsp_get_sessionlog_data]
+CREATE OR ALTER PROCEDURE [BPC].[adfsp_get_sessionlog_data]
 (
-	@tableName nvarchar(30), @minlogid bigint, @maxlogid bigint
+	@minlogid BIGINT, @maxlogid BIGINT
 )
 AS
 BEGIN
@@ -18,14 +21,20 @@ BEGIN
     -- interfering with SELECT statements.
     SET NOCOUNT ON
 
-	declare @sqlCommand nvarchar(1000),
-	@ParmDefinition nvarchar(500)
+	DECLARE @sqlCommand NVARCHAR(1000),	@ParmDefinition NVARCHAR(500),
+			@LoggingType BIT,@sessionlogtable NVARCHAR(50)
 
-set @sqlCommand = N''select logid, sessionnumber, stageid, stagename, stagetype, processname, pagename, objectname, actionname, result, resulttype, startdatetime, enddatetime, attributexml, automateworkingset ,targetappname, targetappworkingset, starttimezoneoffset, endtimezoneoffset, attributesize from dbo.'' + @tableName + '' with (nolock) where logid > '' + CONVERT(nvarchar,@minlogid) + '' and  logid <= '' + CONVERT(nvarchar,@maxlogid) + '' order by logid;'';
-set @ParmDefinition = N''@tableName nvarchar(255), @minlogid bigint, @maxlogid bigint'';
-Exec sp_executesql @sqlCommand, @ParmDefinition, @tableName = @tableName, @minlogid = @minlogid, @maxlogid = @maxlogid
+	SELECT @LoggingType = unicodeLogging FROM BPASysConfig
+	
+	IF @LoggingType = 0
+	SET @sessionlogtable = 'BPASessionLog_NonUnicode'
+	ELSE SET @sessionlogtable = 'BPASessionLog_Unicode'
 
-END'
+SET @sqlCommand = N'select logid, sessionnumber, stageid, stagename, stagetype, processname, pagename, objectname, actionname, result, resulttype, startdatetime, enddatetime, attributexml, automateworkingset ,targetappname, targetappworkingset, starttimezoneoffset, endtimezoneoffset, attributesize from dbo.' + @sessionlogtable + ' with (nolock) where logid > ' + CONVERT(nvarchar,@minlogid) + ' and  logid <= ' + CONVERT(nvarchar,@maxlogid) + ' order by logid;';
+SET @ParmDefinition = N'@sessionlogtable nvarchar(255), @minlogid bigint, @maxlogid bigint';
+EXEC sp_executesql @sqlCommand, @ParmDefinition, @sessionlogtable = @sessionlogtable, @minlogid = @minlogid, @maxlogid = @maxlogid
 
-EXECUTE SP_EXECUTESQL @adfsp_get_sessionlog_data
 END
+GO
+
+
