@@ -1,13 +1,14 @@
 --/*
 --1.Drop Schema binding view
-----DROP VIEW aavw_Sessionnumber
-----DROP VIEW aavw_ControlTableUpdate
+--DROP VIEW aavw_Sessionnumber
+--DROP VIEW aavw_ControlTableUpdate
 
 --2.Switch prod sessionlog table to copy
-----ALTER TABLE [dbo].[BPASessionLog_NonUnicode] SWITCH TO [dbo].[BPASessionLog_NonUnicodeCopy];
+--BEGIN
+--ALTER TABLE [dbo].[BPASessionLog_NonUnicode] SWITCH TO [dbo].[BPASessionLog_NonUnicodeCopy];
 
 
---3. Initialize Partitioned seesion log table- Copy top 1000 records from copy to prod
+----3. Initialize Partitioned seesion log table- Copy top 1000 records from copy to prod
 --SET IDENTITY_INSERT [dbo].[BPASessionLog_NonUnicode] ON
 --INSERT INTO [dbo].[BPASessionLog_NonUnicode]
 --           ([logid]
@@ -29,7 +30,7 @@
 --           ,[targetappworkingset]
 --           ,[starttimezoneoffset]
 --           ,[endtimezoneoffset])
--- SELECT	TOP 1000	[logid]
+-- SELECT	TOP 1	[logid]
 --		   ,[sessionnumber]
 --           ,[stageid]
 --           ,[stagename]
@@ -51,7 +52,7 @@
 --FROM [dbo].[BPASessionLog_NonUnicodeCopy] WITH (NOLOCK)
 --ORDER BY logid DESC
 --SET IDENTITY_INSERT [dbo].[BPASessionLog_NonUnicode] OFF
-
+--END
 --2.Create Partiton Function & Scheme
 --/**Identity partition seed value **/
 --DECLARE @nextPartitionID bigint --Maximum logid or seed value in BPASessionLog Table
@@ -177,3 +178,8 @@ ORDER BY p.partition_number ASC;
 --7.Drop [dbo].[BPASessionLog_NonUnicodeCopy]
 --DROP TABLE [dbo].[BPASessionLog_NonUnicodeCopy]
 --*/
+
+
+
+
+
