@@ -1,22 +1,27 @@
 SET XACT_ABORT ON;
+DECLARE @tableExists BIT, @partitionExists BIT
+IF EXISTS(SELECT 1 FROM sys.partitions where OBJECT_NAME(object_id) in ('BPASessionLog_NonUnicode','BPASessionLog_Unicode') AND rows <> 0) --IS NOT NULL
+SET @tableExists = 1
 
-/*1_Create session log copy table and switch data from production to copy*/
-BEGIN TRANSACTION
-SET NOCOUNT ON;
-BEGIN
+IF NOT EXISTS(SELECT 1 FROM sys.indexes i     
+			INNER JOIN sys.partition_schemes ps   
+			ON i.data_space_id = ps.data_space_id
+WHERE OBJECT_NAME(object_id) in ('BPASessionLog_NonUnicode','BPASessionLog_Unicode'))
+SET @partitionExists = 0
+
+IF @tableExists = 1 AND @partitionExists = 0
+BEGIN 
 DECLARE @CopySessionLogTbl NVARCHAR(MAX),
 		@loggingTable NVARCHAR(30),
 		@loggingType BIT,
 		@switchCopySessionLog NVARCHAR(MAX),
 		@copyTopLogging NVARCHAR(MAX),
 		@deleteTopLogging NVARCHAR(200),
-		@debug BIT = 0,
-		@CopySessionLogTable NVARCHAR(30),
-		@switchSessionLogBack NVARCHAR(MAX),
-		@maxLogid BIGINT, 
+		@maxLogid BIGINT,
 		@sessionlogtable NVARCHAR(50), 
 		@mxidStr NVARCHAR(400),
-		@mxidout BIGINT, @mnidout BIGINT, 
+		@mxidout BIGINT,
+		@mnidout BIGINT, 
 		@param NVARCHAR(255) = '@mxid BIGINT OUTPUT, @mnid BIGINT OUTPUT',
 		@constraintStr NVARCHAR(400), 
 		@logidMax BIGINT,
@@ -26,25 +31,21 @@ DECLARE @CopySessionLogTbl NVARCHAR(MAX),
 		@createPartitionFunction NVARCHAR(400),
 		@createPartitionScheme NVARCHAR(400),
 		@nextPartitionID BIGINT, --Maximum logid or seed value in BPASessionLog Table
-		@partitionseedValue BIGINT --Partition function seed value
+		@partitionseedValue BIGINT, --Partition function seed value
+		@clusterindexpartition NVARCHAR(max), 
+		@nonclusterindexpartition NVARCHAR(max),
+		@sessionlogindex NVARCHAR(100),
+		@CopySessionLogTable NVARCHAR(30),
+		@switchSessionLogBack NVARCHAR(MAX),
+		@deleteCopySessionLogTable NVARCHAR(200)
 
 
-/*                                          
-Creating Partition logging table
-*/
-IF @debug  = 0
-BEGIN
-IF (OBJECT_ID(N'[DBO].[PartitionAuditLog]',N'U')) IS NULL
-BEGIN
-CREATE TABLE PartitionAuditLog(
-[StepNo] TINYINT IDENTITY(1,1),
-[ActionPerformed] VARCHAR(200),
-[TimeStamp] DATETIME DEFAULT getdate()
-)
-END
-END
+/*1_Switch production data to a copy table*/
+BEGIN 
+PRINT '---Switching production data to a copy table---'
+	
 
-
+SET NOCOUNT ON
 /*                                          
 Identify dependants views and drop.
 */
@@ -62,18 +63,7 @@ BEGIN
 SELECT TOP 1 @viewName = viewName FROM @schema_bound_views
 SET @deleteViewStr = 'DROP VIEW '+@viewName
 
-
-IF @debug = 1
-BEGIN
-PRINT (@deleteViewStr)
-END
-ELSE 
-BEGIN
 EXEC (@deleteViewStr);
-
-INSERT DBO.PartitionAuditLog([ActionPerformed])
-VALUES('Delete view '+@viewName);
-END
 
 DELETE @schema_bound_views WHERE viewName = @viewName
 SET @int = @int + 1
@@ -93,7 +83,6 @@ IF @loggingType = 0
 BEGIN
 SET @loggingTable = 'BPASessionLog_NonUnicode'
 SET @CopySessionLogTbl = '
-
 
 IF EXISTS (select 1 from sys.dm_db_partition_stats
 where OBJECT_NAME(object_id) = '''+@loggingTable+''' and row_count > 0)
@@ -127,10 +116,8 @@ CREATE TABLE [dbo].['+@loggingTable +'Copy](
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY];
 
-
 ALTER TABLE [dbo].[' +@loggingTable +'Copy]  WITH CHECK ADD  CONSTRAINT [FK_'+@loggingTable +'Copy_BPASession] FOREIGN KEY([sessionnumber])
 REFERENCES [dbo].[BPASession] ([sessionnumber]);
-
 
 ALTER TABLE [dbo].[' +@loggingTable +'Copy] CHECK CONSTRAINT [FK_'+@loggingTable +'Copy_BPASession];
 
@@ -141,9 +128,10 @@ CREATE NONCLUSTERED INDEX [Index_'+ @loggingTable +'Copy_sessionnumber] ON [dbo]
 	[sessionnumber] ASC
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY];
 END
-'
 
-SET @switchCopySessionLog = 'ALTER TABLE [dbo].['+@loggingTable+'] SWITCH TO [dbo].['+@loggingTable +'Copy];'
+ALTER TABLE [dbo].['+@loggingTable+'] SWITCH TO [dbo].['+@loggingTable +'Copy];
+END
+'
 
 END
 
@@ -152,7 +140,6 @@ ELSE
 BEGIN
 SET @loggingTable = 'BPASessionLog_Unicode'
 SET @CopySessionLogTbl = '
-
 
 IF EXISTS (select 1 from sys.dm_db_partition_stats
 where OBJECT_NAME(object_id) = '''+@loggingTable+''' and row_count > 0)
@@ -186,13 +173,10 @@ CREATE TABLE [dbo].['+@loggingTable +'Copy](
 )WITH (STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY];
 
-
 ALTER TABLE [dbo].[' +@loggingTable +'Copy]  WITH CHECK ADD  CONSTRAINT [FK_'+@loggingTable +'Copy_BPASession] FOREIGN KEY([sessionnumber])
 REFERENCES [dbo].[BPASession] ([sessionnumber]);
 
-
 ALTER TABLE [dbo].[' +@loggingTable +'Copy] CHECK CONSTRAINT [FK_'+@loggingTable +'Copy_BPASession];
-
 
 
 /****** Object:  Index [Index_BPASessionLog_NonUnicodeCopy_sessionnumber]    Script Date: 27/03/2023 10:43:01 ******/
@@ -202,36 +186,19 @@ CREATE NONCLUSTERED INDEX [Index_'+ @loggingTable +'Copy_sessionnumber] ON [dbo]
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY];
 END
 
-
-DECLARE @csLogidMax BIGINT, @csLogidMin BIGINT
-SELECT @csLogidMax = MAX(logid), @csLogidMin = MIN(logid) FROM [dbo].[' +@loggingTable +'Copy];
-
-ALTER TABLE [dbo].[' +@loggingTable +'Copy]
-ADD CONSTRAINT cslogid CHECK (logid >= @csLogidMin and logid < @csLogidMax) 
-
+ALTER TABLE [dbo].['+@loggingTable+'] SWITCH TO [dbo].['+@loggingTable +'Copy];
+END
 '
 
-SET @switchCopySessionLog = 'ALTER TABLE [dbo].['+@loggingTable+'] SWITCH TO [dbo].['+@loggingTable +'Copy];'
-
 END
 
-IF @debug = 1
-BEGIN
-PRINT (@CopySessionLogTbl)
-PRINT (@switchCopySessionLog)
-
-END
-ELSE
-BEGIN
 EXEC (@CopySessionLogTbl);
-EXEC (@switchCopySessionLog)
+PRINT '---Switching production data to a copy table completed---'
 END
 
-END
-
-/*2_Set check constraints for logid in copy session log table*/
-
+/*2_Create check constraints on copy session log table */
 BEGIN
+PRINT '---Creating check constraints on copy session log table---'
 
 	SELECT @LoggingType = unicodeLogging FROM BPASysConfig
 	
@@ -245,35 +212,34 @@ BEGIN
 	
 	EXEC sp_executeSQL @mxidStr, N'@mxid BIGINT OUTPUT, @mnid BIGINT OUTPUT', @mxid = @mxidout OUTPUT,@mnid = @mnidout OUTPUT  ;
 	
-	SELECT @mxidout, @mnidout 
+	
 	SET @logidMax = @mxidout+1
 SET @constraintStr = '
 ALTER TABLE [dbo].'+QUOTENAME(@sessionlogtable)+'
 ADD CONSTRAINT cslogid CHECK (logid >= '+CONVERT(NVARCHAR(50),@mnidout) + ' and logid < ' +CONVERT(NVARCHAR(50),@logidMax) +') '
 
---PRINT (@constraintStr)
 EXEC  (@constraintStr)
 END
+PRINT '---Creating check constraints on copy session log table completed---'
 END
 
-/*3_Partition production session log table*/
-BEGIN
-
+/*3_Create partition function and scheme*/
+BEGIN 
+PRINT '---Creating partition function and scheme---'
 SET NOCOUNT ON;
-
 
 SELECT @loggingType = unicodeLogging FROM BPASysConfig
 
 IF @loggingType = 0 
-SET @sessionlogtable = 'dbo.BPASessionLog_NonUnicode'
-ELSE SET @sessionlogtable = 'dbo.BPASessionLog_Unicode'
+SET @sessionlogtable = 'dbo.BPASessionLog_NonUnicodeCopy'
+ELSE SET @sessionlogtable = 'dbo.BPASessionLog_UnicodeCopy'
 
 SET @strMaxLogid = 'select @maxlogid = max(logid) from ' +@sessionlogtable
 
 EXEC sp_executeSQL @strMaxLogid, @params, @maxlogid = @maxlogidout OUTPUT;
 
-IF @maxlogidout is null SET @nextPartitionID = 0 ELSE SET @nextPartitionID =  @maxlogidout
 
+IF @maxlogidout is null SET @nextPartitionID = 0 ELSE SET @nextPartitionID =  @maxlogidout + 1
 
 /**Create partition function and scheme **/
 
@@ -281,42 +247,87 @@ IF NOT EXISTS(SELECT 1 FROM sys.partition_functions WHERE name = 'PF_Dynamic_NU'
 BEGIN
 SET @createPartitionFunction = 'CREATE PARTITION FUNCTION [PF_Dynamic_NU](BIGINT) AS RANGE RIGHT FOR VALUES('+CONVERT(NVARCHAR(20),@nextPartitionID)+')'	
 
-IF @debug = 1
-BEGIN
-PRINT (@createPartitionFunction)
-END
-ELSE
-BEGIN
 EXEC (@createPartitionFunction);
 
-INSERT DBO.PartitionAuditLog([ActionPerformed])
-VALUES('Create Partition Function');
 END
 
-END
 IF NOT EXISTS(SELECT 1 FROM sys.partition_schemes WHERE name = 'PS_Dynamic_NU')
 BEGIN
 SET @createPartitionScheme = 'CREATE PARTITION SCHEME [PS_Dynamic_NU] AS PARTITION PF_Dynamic_NU ALL TO ([PRIMARY])'
 
-IF @debug = 1
+EXEC (@createPartitionScheme);
+
+END
+PRINT '---Creating partition function and scheme completed---'
+END
+
+
+/*4_Partition production session log table*/
+BEGIN 
+PRINT '---Partitioning production session log table---'
+SET NOCOUNT ON;
+
+SELECT @loggingType = unicodeLogging FROM BPASysConfig
+
+IF @loggingType = 0 
+SET @sessionlogtable = 'BPASessionLog_NonUnicode'
+ELSE SET @sessionlogtable = 'BPASessionLog_Unicode'
+
+
+DECLARE PartitionSessionLogTable CURSOR
+FOR
+SELECT name FROM SYS.indexes WHERE OBJECT_NAME(OBJECT_ID) = @sessionlogtable 
+
+OPEN PartitionSessionLogTable
+
+FETCH NEXT FROM PartitionSessionLogTable INTO @sessionlogindex
+
+WHILE @@FETCH_STATUS = 0
+
 BEGIN
-PRINT (@createPartitionScheme)
+IF @sessionlogindex LIKE 'PK_%'
+BEGIN
+SET @clusterindexpartition = '
+	CREATE UNIQUE CLUSTERED INDEX '+QUOTENAME(@sessionlogindex)+
+	' ON [dbo].'+QUOTENAME(@sessionlogtable)+'(logid)
+	WITH (DROP_EXISTING = ON)
+	ON PS_Dynamic_NU (logid);'
+
+INSERT DBO.PartitionAuditLog([ActionPerformed])
+VALUES('CREATE UNIQUE CLUSTERED INDEX '+ @sessionlogindex +' INDEX');
+
+EXEC (@clusterindexpartition)
+
 END
 ELSE
 BEGIN
-EXEC (@createPartitionScheme);
+SET @clusterindexpartition = '
+	
+	DROP INDEX '+QUOTENAME(@sessionlogindex)+' ON [dbo].'+QUOTENAME(@sessionlogtable)+';
+	
+	CREATE NONCLUSTERED INDEX '+QUOTENAME(@sessionlogindex)+' ON [dbo].'+QUOTENAME(@sessionlogtable)+
+	' (
+	[sessionnumber] ASC
+	)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) 
+	ON PS_Dynamic_NU (logid);'
 
 INSERT DBO.PartitionAuditLog([ActionPerformed])
-VALUES('Create Partition Scheme');
+VALUES('CREATE UNIQUE CLUSTERED INDEX '+ @sessionlogindex +' INDEX');
+
+EXEC (@clusterindexpartition)
+END
+FETCH NEXT FROM PartitionSessionLogTable INTO @sessionlogindex
 END
 
+CLOSE PartitionSessionLogTable
+DEALLOCATE PartitionSessionLogTable
+PRINT '---Partitioning production session log table completed and delete copy table---'
 END
-END
 
 
-/*4_Switch data to partitioned production session log table*/
-
-BEGIN
+/*5_Switch session log data back to production table*/
+BEGIN 
+PRINT '---Switching session log data back to production table---'
 
 SELECT @loggingType = unicodeLogging FROM BPASysConfig
 
@@ -334,8 +345,23 @@ END
 
 SET @switchSessionLogBack = 'ALTER TABLE DBO.'+QUOTENAME(@CopySessionLogTable) + ' SWITCH TO DBO.'+QUOTENAME(@loggingTable) +' PARTITION 1;'
 
+SET @deleteCopySessionLogTable = 'IF NOT EXISTS(SELECT 1 FROM DBO.'+QUOTENAME(@CopySessionLogTable)+')
+DROP TABLE DBO.'+QUOTENAME(@CopySessionLogTable)+';'
+
 EXEC (@switchSessionLogBack)
+EXEC (@deleteCopySessionLogTable)
+PRINT '---Switching session log data back to production table and delete copy table completed---'
+END
 
 END
-COMMIT TRANSACTION
 SET XACT_ABORT OFF;
+
+
+
+
+
+
+
+
+
+

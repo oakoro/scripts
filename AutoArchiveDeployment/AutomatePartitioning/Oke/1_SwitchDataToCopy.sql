@@ -4,25 +4,9 @@ DECLARE @CopySessionLogTbl NVARCHAR(MAX),
 		@switchCopySessionLog NVARCHAR(MAX),
 		@copyTopLogging NVARCHAR(MAX),
 		@deleteTopLogging NVARCHAR(200),
-		@debug BIT = 1
+		@debug BIT = 0
 
-
-/*                                          
-Creating Partition logging table
-*/
-IF @debug  = 0
-BEGIN
-IF (OBJECT_ID(N'[DBO].[PartitionAuditLog]',N'U')) IS NULL
-BEGIN
-CREATE TABLE PartitionAuditLog(
-[StepNo] TINYINT IDENTITY(1,1),
-[ActionPerformed] VARCHAR(200),
-[TimeStamp] DATETIME DEFAULT getdate()
-)
-END
-END
-
-
+SET NOCOUNT ON
 /*                                          
 Identify dependants views and drop.
 */
@@ -40,19 +24,7 @@ BEGIN
 SELECT TOP 1 @viewName = viewName FROM @schema_bound_views
 SET @deleteViewStr = 'DROP VIEW '+@viewName
 
-
-
-IF @debug = 1
-BEGIN
-PRINT (@deleteViewStr)
-END
-ELSE 
-BEGIN
 EXEC (@deleteViewStr);
-
-INSERT DBO.PartitionAuditLog([ActionPerformed])
-VALUES('Delete view '+@viewName);
-END
 
 DELETE @schema_bound_views WHERE viewName = @viewName
 SET @int = @int + 1
@@ -66,7 +38,7 @@ data to replica table.
 */
 
 SELECT @loggingType = unicodeLogging FROM BPASysConfig
-SET @LoggingType = 1 --Test for Unicode
+
 IF @loggingType = 0
 
 BEGIN
@@ -122,18 +94,9 @@ CREATE NONCLUSTERED INDEX [Index_'+ @loggingTable +'Copy_sessionnumber] ON [dbo]
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY];
 END
 
-
-
-
-
+ALTER TABLE [dbo].['+@loggingTable+'] SWITCH TO [dbo].['+@loggingTable +'Copy];
+END
 '
---print @CopySessionLogTbl
-
-SET @switchCopySessionLog = 'ALTER TABLE [dbo].['+@loggingTable+'] SWITCH TO [dbo].['+@loggingTable +'Copy];'
---PRINT @switchCopySessionLog
-
-
-
 
 END
 
@@ -192,39 +155,14 @@ CREATE NONCLUSTERED INDEX [Index_'+ @loggingTable +'Copy_sessionnumber] ON [dbo]
 )WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY];
 END
 
-
-DECLARE @csLogidMax BIGINT, @csLogidMin BIGINT
-SELECT @csLogidMax = MAX(logid), @csLogidMin = MIN(logid) FROM [dbo].[' +@loggingTable +'Copy];
-
-ALTER TABLE [dbo].[' +@loggingTable +'Copy]
-ADD CONSTRAINT cslogid CHECK (logid >= @csLogidMin and logid < @csLogidMax) 
-
+ALTER TABLE [dbo].['+@loggingTable+'] SWITCH TO [dbo].['+@loggingTable +'Copy];
+END
 '
---print @CopySessionLogTbl
-
-SET @switchCopySessionLog = 'ALTER TABLE [dbo].['+@loggingTable+'] SWITCH TO [dbo].['+@loggingTable +'Copy];'
---PRINT @switchCopySessionLog
-
-
-
-
-
-
-
-
 
 END
 
-IF @debug = 1
-BEGIN
-PRINT (@CopySessionLogTbl)
-PRINT (@switchCopySessionLog)
+EXEC (@CopySessionLogTbl);
 
-END
-ELSE
-BEGIN
-EXEC (@switchCopySessionLog);
-EXEC (@switchCopySessionLog)
-END
+
 
 

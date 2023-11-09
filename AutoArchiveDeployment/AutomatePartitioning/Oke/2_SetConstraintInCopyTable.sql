@@ -16,17 +16,16 @@ BEGIN
 	
 	EXEC sp_executeSQL @mxidStr, N'@mxid BIGINT OUTPUT, @mnid BIGINT OUTPUT', @mxid = @mxidout OUTPUT,@mnid = @mnidout OUTPUT  ;
 	
-	SELECT @mxidout, @mnidout 
+	
 	SET @logidMax = @mxidout+1
 SET @constraintStr = '
 ALTER TABLE [dbo].'+QUOTENAME(@sessionlogtable)+'
 ADD CONSTRAINT cslogid CHECK (logid >= '+CONVERT(NVARCHAR(50),@mnidout) + ' and logid < ' +CONVERT(NVARCHAR(50),@logidMax) +') '
 
---PRINT (@constraintStr)
 EXEC  (@constraintStr)
 END
 
---SELECT * INTO BPASessionLog_NonUnicodeCopy FROM BPASessionLog_NonUnicode
+
 
 
 
