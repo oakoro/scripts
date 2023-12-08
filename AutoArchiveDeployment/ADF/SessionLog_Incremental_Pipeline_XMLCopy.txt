@@ -1,0 +1,430 @@
+{
+    "name": "SessionLog_Incremental_Pipeline_XMLCopy",
+    "properties": {
+        "activities": [
+            {
+                "name": "Lookup_Get_Max_Logid",
+                "type": "Lookup",
+                "dependsOn": [
+                    {
+                        "activity": "Lookup_Last_Processed_Logid",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "AzureSqlSource",
+                        "sqlReaderStoredProcedureName": "[BPC].[adfsp_get_maxlogid]",
+                        "storedProcedureParameters": {
+                            "minlogid": {
+                                "type": "Int64",
+                                "value": {
+                                    "value": "@activity('Lookup_Last_Processed_Logid').output.firstRow.minlogid",
+                                    "type": "Expression"
+                                }
+                            },
+                            "rowamt": {
+                                "type": "Int64",
+                                "value": {
+                                    "value": "@pipeline().globalParameters.chunkAmount",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        "queryTimeout": "02:00:00",
+                        "isolationLevel": "ReadUncommitted",
+                        "partitionOption": "None"
+                    },
+                    "dataset": {
+                        "referenceName": "DS_RPA_PROD_Source",
+                        "type": "DatasetReference"
+                    }
+                }
+            },
+            {
+                "name": "Lookup_Last_Processed_Logid",
+                "type": "Lookup",
+                "dependsOn": [],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "AzureSqlSource",
+                        "sqlReaderStoredProcedureName": "[BPC].[adfsp_get_minlogid]",
+                        "queryTimeout": "02:00:00",
+                        "isolationLevel": "ReadUncommitted",
+                        "partitionOption": "None"
+                    },
+                    "dataset": {
+                        "referenceName": "DS_RPA_PROD_Source",
+                        "type": "DatasetReference"
+                    }
+                }
+            },
+            {
+                "name": "Lookup_Get_XML_DataSize",
+                "type": "Lookup",
+                "dependsOn": [
+                    {
+                        "activity": "Lookup_Get_Max_Logid",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "policy": {
+                    "timeout": "0.12:00:00",
+                    "retry": 0,
+                    "retryIntervalInSeconds": 30,
+                    "secureOutput": false,
+                    "secureInput": false
+                },
+                "userProperties": [],
+                "typeProperties": {
+                    "source": {
+                        "type": "AzureSqlSource",
+                        "sqlReaderStoredProcedureName": "[BPC].[aasp_getXMLDataSize]",
+                        "storedProcedureParameters": {
+                            "maxLogid": {
+                                "type": "Int64",
+                                "value": {
+                                    "value": "@activity('Lookup_Get_Max_Logid').output.firstRow.MaxLogid",
+                                    "type": "Expression"
+                                }
+                            },
+                            "minLogid": {
+                                "type": "Int64",
+                                "value": {
+                                    "value": "@activity('Lookup_Last_Processed_Logid').output.firstRow.minlogid",
+                                    "type": "Expression"
+                                }
+                            },
+                            "xmlDataThreshold": {
+                                "type": "Int64",
+                                "value": {
+                                    "value": "@pipeline().globalParameters.xmldatathreshold",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        "queryTimeout": "02:00:00",
+                        "partitionOption": "None"
+                    },
+                    "dataset": {
+                        "referenceName": "DS_RPA_PROD_Source",
+                        "type": "DatasetReference"
+                    },
+                    "firstRowOnly": true
+                }
+            },
+            {
+                "name": "If Condition1",
+                "type": "IfCondition",
+                "dependsOn": [
+                    {
+                        "activity": "Lookup_Get_XML_DataSize",
+                        "dependencyConditions": [
+                            "Succeeded"
+                        ]
+                    }
+                ],
+                "userProperties": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@activity('Lookup_Get_XML_DataSize').output.firstRow.DataSizeStatus",
+                        "type": "Expression"
+                    },
+                    "ifFalseActivities": [
+                        {
+                            "name": "Watermark_Option_Copy_copy1",
+                            "type": "Copy",
+                            "dependsOn": [
+                                {
+                                    "activity": "false",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "AzureSqlSource",
+                                    "sqlReaderStoredProcedureName": "[BPC].[adfsp_get_sessionlog_data]",
+                                    "storedProcedureParameters": {
+                                        "maxlogid": {
+                                            "type": "Int64",
+                                            "value": {
+                                                "value": "@activity('Lookup_Get_Max_Logid').output.firstRow.maxlogid",
+                                                "type": "Expression"
+                                            }
+                                        },
+                                        "minlogid": {
+                                            "type": "Int64",
+                                            "value": {
+                                                "value": "@activity('Lookup_Last_Processed_Logid').output.firstRow.minlogid",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    },
+                                    "queryTimeout": "02:00:00",
+                                    "isolationLevel": "ReadUncommitted",
+                                    "partitionOption": "None"
+                                },
+                                "sink": {
+                                    "type": "ParquetSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    },
+                                    "formatSettings": {
+                                        "type": "ParquetWriteSettings"
+                                    }
+                                },
+                                "enableStaging": false,
+                                "validateDataConsistency": true,
+                                "dataIntegrationUnits": 2,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": false,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "DS_RPA_PROD_Source",
+                                    "type": "DatasetReference"
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "DS_AutoArchiveSessionlog_Sink",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "tableName": {
+                                            "value": "@pipeline().globalParameters.sessionlogTablename",
+                                            "type": "Expression"
+                                        },
+                                        "containername": {
+                                            "value": "@pipeline().globalParameters.ContainerName",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Update WatermarkTable_copy1",
+                            "type": "SqlServerStoredProcedure",
+                            "dependsOn": [
+                                {
+                                    "activity": "Watermark_Option_Copy_copy1",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "storedProcedureName": "[BPC].[adfsp_update_watermark_sessionlog]",
+                                "storedProcedureParameters": {
+                                    "logid": {
+                                        "value": {
+                                            "value": "@activity('Lookup_Get_Max_Logid').output.firstRow.maxlogid",
+                                            "type": "Expression"
+                                        },
+                                        "type": "Int64"
+                                    }
+                                }
+                            },
+                            "linkedServiceName": {
+                                "referenceName": "LS_ASDB_Source",
+                                "type": "LinkedServiceReference"
+                            }
+                        },
+                        {
+                            "name": "false",
+                            "type": "Wait",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "waitTimeInSeconds": 1
+                            }
+                        }
+                    ],
+                    "ifTrueActivities": [
+                        {
+                            "name": "Watermark_Option_Copy",
+                            "type": "Copy",
+                            "dependsOn": [
+                                {
+                                    "activity": "true",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "source": {
+                                    "type": "AzureSqlSource",
+                                    "sqlReaderStoredProcedureName": "[BPC].[adfsp_get_sessionlog_data]",
+                                    "storedProcedureParameters": {
+                                        "maxlogid": {
+                                            "type": "Int64",
+                                            "value": {
+                                                "value": "@activity('Lookup_Get_Max_Logid').output.firstRow.maxlogid",
+                                                "type": "Expression"
+                                            }
+                                        },
+                                        "minlogid": {
+                                            "type": "Int64",
+                                            "value": {
+                                                "value": "@activity('Lookup_Last_Processed_Logid').output.firstRow.minlogid",
+                                                "type": "Expression"
+                                            }
+                                        }
+                                    },
+                                    "queryTimeout": "02:00:00",
+                                    "isolationLevel": "ReadUncommitted",
+                                    "partitionOption": "None"
+                                },
+                                "sink": {
+                                    "type": "ParquetSink",
+                                    "storeSettings": {
+                                        "type": "AzureBlobFSWriteSettings"
+                                    },
+                                    "formatSettings": {
+                                        "type": "ParquetWriteSettings",
+                                        "maxRowsPerFile": 2,
+                                        "fileNamePrefix": {
+                                            "value": "@concat(formatDateTime(utcnow(),'yyyy'),'/',formatDateTime(utcnow(),'MM'),'/BPASessionlog_NonUnicode_',formatDateTime(utcnow(),'yyyy_MM_ddTHH:mm:ssZ'),'.parquet')",
+                                            "type": "Expression"
+                                        }
+                                    }
+                                },
+                                "enableStaging": false,
+                                "validateDataConsistency": true,
+                                "dataIntegrationUnits": 2,
+                                "translator": {
+                                    "type": "TabularTranslator",
+                                    "typeConversion": true,
+                                    "typeConversionSettings": {
+                                        "allowDataTruncation": false,
+                                        "treatBooleanAsNumber": false
+                                    }
+                                }
+                            },
+                            "inputs": [
+                                {
+                                    "referenceName": "DS_RPA_PROD_Source",
+                                    "type": "DatasetReference"
+                                }
+                            ],
+                            "outputs": [
+                                {
+                                    "referenceName": "DS_AutoArchiveSessionlog_Sink_copy1",
+                                    "type": "DatasetReference",
+                                    "parameters": {
+                                        "tableName": "@pipeline().globalParameters.sessionlogTablename",
+                                        "containername": "@pipeline().globalParameters.containername"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Update WatermarkTable",
+                            "type": "SqlServerStoredProcedure",
+                            "dependsOn": [
+                                {
+                                    "activity": "Watermark_Option_Copy",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "userProperties": [],
+                            "typeProperties": {
+                                "storedProcedureName": "[BPC].[adfsp_update_watermark_sessionlog]",
+                                "storedProcedureParameters": {
+                                    "logid": {
+                                        "value": {
+                                            "value": "@activity('Lookup_Get_Max_Logid').output.firstRow.maxlogid",
+                                            "type": "Expression"
+                                        },
+                                        "type": "Int64"
+                                    }
+                                }
+                            },
+                            "linkedServiceName": {
+                                "referenceName": "LS_ASDB_Source",
+                                "type": "LinkedServiceReference"
+                            }
+                        },
+                        {
+                            "name": "true",
+                            "type": "Wait",
+                            "dependsOn": [],
+                            "userProperties": [],
+                            "typeProperties": {
+                                "waitTimeInSeconds": 1
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "folder": {
+            "name": "AutoArchiveSolution Pipelines"
+        },
+        "annotations": [],
+        "lastPublishTime": "2023-11-28T17:41:22Z"
+    },
+    "type": "Microsoft.DataFactory/factories/pipelines"
+}

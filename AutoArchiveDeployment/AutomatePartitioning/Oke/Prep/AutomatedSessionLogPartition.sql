@@ -293,8 +293,7 @@ SET @clusterindexpartition = '
 	WITH (DROP_EXISTING = ON)
 	ON PS_Dynamic_NU (logid);'
 
-INSERT DBO.PartitionAuditLog([ActionPerformed])
-VALUES('CREATE UNIQUE CLUSTERED INDEX '+ @sessionlogindex +' INDEX');
+
 
 EXEC (@clusterindexpartition)
 
@@ -311,8 +310,6 @@ SET @clusterindexpartition = '
 	)WITH (STATISTICS_NORECOMPUTE = OFF, DROP_EXISTING = OFF, ONLINE = OFF, FILLFACTOR = 90, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) 
 	ON PS_Dynamic_NU (logid);'
 
-INSERT DBO.PartitionAuditLog([ActionPerformed])
-VALUES('CREATE UNIQUE CLUSTERED INDEX '+ @sessionlogindex +' INDEX');
 
 EXEC (@clusterindexpartition)
 END
