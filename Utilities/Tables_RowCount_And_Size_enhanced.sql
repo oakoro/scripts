@@ -28,5 +28,8 @@ select distinct SchemaName, name, sum(rows) 'RowCount',sum(Used_MB)'Used_MB',
 sum(Unused_MB)'Unused_MB',sum(Total_MB)'Total_MB'
 from cte_2
 group by SchemaName, name
-ORDER BY sum(rows) desc
+ORDER BY sum(rows) desc;
 
+go
+sp_spaceused 'BPAAuditEvents'
+--select 21196136/1024,21189552/1024

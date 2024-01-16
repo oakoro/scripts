@@ -32,7 +32,7 @@ EXECUTE [BPC].[aasp_delete_copied_Sessionlog_partition] @partitionsretained = 5;
 END
 ELSE
 BEGIN
--- Partition session log table  
+-- Partition session log table for the first time 
 EXECUTE [BPC].[aasp_create_new_partition_BPASessionlog];
 END
   
