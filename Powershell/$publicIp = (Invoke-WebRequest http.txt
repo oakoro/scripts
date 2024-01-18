@@ -1,0 +1,2 @@
+$publicIp = (Invoke-WebRequest http://myexternalip.com/raw).Content -replace "`n"
+Get-AzureRmSqlServer -ResourceGroupName westazureresourcegroup

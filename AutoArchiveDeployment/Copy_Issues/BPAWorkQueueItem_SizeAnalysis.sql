@@ -24,4 +24,19 @@ SELECT isnull(datalength([id]),0)'id'
       ,isnull(datalength([lastupdated]),0)'lastupdated'
       ,isnull(datalength([locktime]),0)'locktime'
       ,isnull(datalength([lockid]),0)'lockid'
+  FROM [dbo].[BPAWorkQueueItem] 
+  where isnull(datalength([data]),0) > 80000 and finished is not null
+  order by isnull(datalength([data]),0)
+
+  --select top 2*   FROM [dbo].[BPAWorkQueueItem] where finished is not null --84419
+  --select count(*)   FROM [dbo].[BPAWorkQueueItem] where finished is not null --84419
+  select count(*)   FROM [dbo].[BPAWorkQueueItem] where isnull(datalength([data]),0) > 285933
+
+  select min(isnull(datalength([data]),0))'MinData', AVG(isnull(datalength([data]),0))'AvgData'
   FROM [dbo].[BPAWorkQueueItem]
+
+
+  select ident,id,queueid,status,loaded,completed,isnull(datalength([data]),0)/1024 'XMLSizeInKilobyte'
+   FROM [dbo].[BPAWorkQueueItem] 
+  where isnull(datalength([data]),0) > 80000 and finished is not null
+  order by isnull(datalength([data]),0)
