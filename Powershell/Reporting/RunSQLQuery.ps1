@@ -20,7 +20,7 @@ $subs = Get-AzSubscription | ? { $_.State -eq "Enabled" } | Sort Name
 #| Select -first 1
  
 $StorageAccountName = "bpcplatforminfo"
-$StorageAccountKey = "rm+F77ZKpnsV6I9YmS9CKfZ9DU7Zxrje1zXX7vdgpC7KMBL0lx6bSZiEGRbJRdbQFukwTDOtdbS2+ASt5HEnjA=="
+$StorageAccountKey = "xxxxxxrm+F77ZKpnsV6I9YmS9CKfZ9DU7Zxrje1zXX7vdgpC7KMBL0lx6bSZiEGRbJRdbQFukwTDOtdbS2+ASt5HEnjA==xxxxxx"
 $tablename = "BPLICENSEINFO"
 $ctx = (New-AzStorageContext -StorageAccountName $StorageAccountName -StorageAccountKey $StorageAccountKey).context
 $Table = (Get-AzStorageTable -context $ctx -table $tablename).CloudTable
