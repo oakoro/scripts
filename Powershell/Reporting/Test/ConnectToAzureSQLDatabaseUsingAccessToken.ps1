@@ -6,8 +6,8 @@ Import-Module Az.Accounts -MinimumVersion 2.2.0
 #       the SELECT permission).
 
 ### Obtain the Access Token: this will bring up the login dialog
-Connect-AzAccount -TenantId "e9a0a386-ecc6-468f-96d6-d74025d961fd"
-Set-AzContext -Subscription "GR2308 (Greater Manchester Mental Health NHS Foundation Trust)"
+Connect-AzAccount -TenantId "898ddc02-8cc0-4e10-9a8c-c0b5cbf7574b"
+Set-AzContext -Subscription "AH2007 (Alder Hey Children's Hospital)"
 
 $FileOutput = "C:\temp\SPDeployment.csv"
 
