@@ -1,0 +1,3 @@
+df.write.format("delta").saveAsTable("myexternaltable", path="Files/myexternaltable")
+
+df.write.format("delta").saveAsTable("myexternaltable", path="abfss://my_store_url..../myexternaltable")

@@ -1,0 +1,5 @@
+# Load a file into a dataframe
+df = spark.read.load('Files/mydata.csv', format='csv', header=True)
+
+# Save the dataframe as a delta table
+df.write.format("delta").saveAsTable("mytable")
