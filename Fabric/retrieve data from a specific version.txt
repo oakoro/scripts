@@ -1,0 +1,7 @@
+===specifying the version required as a versionAsOf option===
+
+df = spark.read.format("delta").option("versionAsOf", 0).load(delta_path)
+
+===Alternatively, you can specify a timestamp by using the timestampAsOf option===
+
+df = spark.read.format("delta").option("timestampAsOf", '2022-01-01').load(delta_path)

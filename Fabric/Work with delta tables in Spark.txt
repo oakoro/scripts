@@ -1,0 +1,25 @@
+===Using Spark SQL===
+spark.sql("INSERT INTO products VALUES (1, 'Widget', 'Accessories', 2.99)")
+
+
+===using %%sql magic in a notebook ===
+%%sql
+
+UPDATE products
+SET Price = 2.49 WHERE ProductId = 1;
+
+
+===Use the Delta API===
+from delta.tables import *
+from pyspark.sql.functions import *
+
+# Create a DeltaTable object
+delta_path = "Files/mytable"
+deltaTable = DeltaTable.forPath(spark, delta_path)
+
+# Update the table (reduce price of accessories by 10%)
+deltaTable.update(
+    condition = "Category == 'Accessories'",
+    set = { "Price": "Price * 0.9" })
+
+

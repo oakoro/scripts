@@ -1,0 +1,48 @@
+====Use the DeltaTableBuilder====
+
+from delta.tables import *
+
+DeltaTable.create(spark) \
+  .tableName("products") \
+  .addColumn("Productid", "INT") \
+  .addColumn("ProductName", "STRING") \
+  .addColumn("Category", "STRING") \
+  .addColumn("Price", "FLOAT") \
+  .execute()
+
+====Use Spark SQL====
+%%sql
+
+CREATE TABLE salesorders
+(
+    Orderid INT NOT NULL,
+    OrderDate TIMESTAMP NOT NULL,
+    CustomerName STRING,
+    SalesTotal FLOAT NOT NULL
+)
+USING DELTA
+
+====create an external table by specifying a LOCATION parameter====
+
+%%sql
+
+CREATE TABLE MyExternalTable
+USING DELTA
+LOCATION 'Files/mydata'
+
+
+====save data in delta format without creating a table definition in the metastore====
+
+delta_path = "Files/mydatatable"
+df.write.format("delta").save(delta_path)
+
+
+====replace the contents of an existing folder with the data in a dataframe====
+
+==Overwrite==
+new_df.write.format("delta").mode("overwrite").save(delta_path)
+
+==Append==
+new_rows_df.write.format("delta").mode("append").save(delta_path)
+
+

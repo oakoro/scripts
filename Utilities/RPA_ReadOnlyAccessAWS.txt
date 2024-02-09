@@ -1,0 +1,12 @@
+USE master;
+CREATE LOGIN [readonly] WITH PASSWORD = 'xxxxxxxxxxx';
+
+
+USE RPA_Production;
+CREATE USER [readonly] FOR LOGIN [readonly];
+
+
+USE RPA_Production;
+EXEC sp_addrolemember N'db_datareader', N'readonly';
+DENY DELETE,INSERT,SELECT,UPDATE ON [dbo].[BPALicense] TO [readonly]
+

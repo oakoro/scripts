@@ -1,0 +1,55 @@
+==Using a delta table as a streaming source==
+
+from pyspark.sql.types import *
+from pyspark.sql.functions import *
+
+# Load a streaming dataframe from the Delta Table
+stream_df = spark.readStream.format("delta") \
+    .option("ignoreChanges", "true") \
+    .load("Files/delta/internetorders")
+
+# Now you can process the streaming data in the dataframe
+# for example, show it:
+stream_df.show()
+
+
+==== Note ====
+
+When using a delta table as a streaming source, only append operations can be included in the stream. Data modifications will cause an error unless you specify the ignoreChanges or ignoreDeletes option.
+
+
+
+===Using a delta table as a streaming sink===
+
+from pyspark.sql.types import *
+from pyspark.sql.functions import *
+
+# Create a stream that reads JSON data from a folder
+inputPath = 'Files/streamingdata/'
+jsonSchema = StructType([
+    StructField("device", StringType(), False),
+    StructField("status", StringType(), False)
+])
+stream_df = spark.readStream.schema(jsonSchema).option("maxFilesPerTrigger", 1).json(inputPath)
+
+# Write the stream to a delta table
+table_path = 'Files/delta/devicetable'
+checkpoint_path = 'Files/delta/checkpoint'
+delta_stream = stream_df.writeStream.format("delta").option("checkpointLocation", checkpoint_path).start(table_path)
+
+
+====query the Delta Lake table====
+
+%%sql
+
+CREATE TABLE DeviceTable
+USING DELTA
+LOCATION 'Files/delta/devicetable';
+
+SELECT device, status
+FROM DeviceTable;
+
+
+===To stop the stream of data being written to the Delta Lake table, you can use the stop method===
+
+delta_stream.stop()

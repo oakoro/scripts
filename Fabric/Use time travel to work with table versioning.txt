@@ -1,0 +1,11 @@
+===To see the history of a table, you can use the DESCRIBE SQL command===
+%%sql
+
+DESCRIBE HISTORY products
+
+
+===To see the history of an external table, specify  folder location instead of the table name===
+
+%%sql
+
+DESCRIBE HISTORY 'Files/mytable'
