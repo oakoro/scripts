@@ -43,7 +43,8 @@ select
                 convert(numeric(10,2),round(fileproperty( a.name,'SpaceUsed')/128.,2)) ,
         [UnusedSpaceMB] =
                 convert(numeric(10,2),round((a.size-fileproperty( a.name,'SpaceUsed'))/128.,2)) ,
-        [DBFileName]    = a.name
+        [DBFileName]    = a.name,
+		[Timestamp] = CURRENT_TIMESTAMP
 from
         sysfiles a 
 where name = @DBFileName
@@ -58,7 +59,7 @@ select @SizeMB = size/128. from sysfiles where name = @DBFileName
 -- Get current space used in MB
 select @UsedMB = fileproperty( @DBFileName,'SpaceUsed')/128.
 
-select [StartFileSize] = @SizeMB, [StartUsedSpace] = @UsedMB, [DBFileName] = @DBFileName
+select [StartFileSize] = @SizeMB, [StartUsedSpace] = @UsedMB, [DBFileName] = @DBFileName,[Timestamp] = CURRENT_TIMESTAMP
 
 -- Loop until file at desired size
 while  @SizeMB > @UsedMB+@TargetFreeMB+@ShrinkIncrementMB
@@ -82,11 +83,11 @@ while  @SizeMB > @UsedMB+@TargetFreeMB+@ShrinkIncrementMB
         -- Get current space used in MB
         select @UsedMB = fileproperty( @DBFileName,'SpaceUsed')/128.
 
-        select [FileSize] = @SizeMB, [UsedSpace] = @UsedMB, [DBFileName] = @DBFileName
+        select [FileSize] = @SizeMB, [UsedSpace] = @UsedMB, [DBFileName] = @DBFileName,[Timestamp] = CURRENT_TIMESTAMP
 
         end
 
-select [EndFileSize] = @SizeMB, [EndUsedSpace] = @UsedMB, [DBFileName] = @DBFileName
+select [EndFileSize] = @SizeMB, [EndUsedSpace] = @UsedMB, [DBFileName] = @DBFileName, [Timestamp] = CURRENT_TIMESTAMP
 
 -- Show Size, Space Used, Unused Space, and Name of all database files
 select
@@ -96,7 +97,7 @@ select
                 convert(numeric(10,2),round(fileproperty( a.name,'SpaceUsed')/128.,2)) ,
         [UnusedSpaceMB] =
                 convert(numeric(10,2),round((a.size-fileproperty( a.name,'SpaceUsed'))/128.,2)) ,
-        [DBFileName]    = a.name
+        [DBFileName]    = a.name, [Timestamp] = CURRENT_TIMESTAMP
 from
         sysfiles a
 where name = @DBFileName
@@ -105,3 +106,5 @@ fetch next from shrinkdb_cursor into @DBFileName
 end
 close shrinkdb_cursor
 deallocate shrinkdb_cursor
+
+
