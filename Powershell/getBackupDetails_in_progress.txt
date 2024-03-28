@@ -1,0 +1,13 @@
+$backuplist = get-childitem | Where-Object {$_.Name -like "*.bak"} | % {$_.FullName}
+foreach ($backup in $backuplist) {
+    $querylistfile = "restore filelistonly from disk = '" +$backup+''''
+    Write-Host $querylistfile;
+    #Invoke-Sqlcmd -ServerInstance BPEU1035 -Query $querylistfile -Database master -
+    Invoke-Sqlcmd -Query "SELECT GETDATE() AS TimeOfQuery" -ServerInstance "BPEU1035"
+
+
+    }
+
+ set-location "SQLSERVER:\Sql\BPEU1035\DEFAULT"
+  SQLSERVER:\Sql\BPEU1035\DEFAULT>  
+  Invoke-Sqlcmd -Query "SELECT GETDATE() AS TimeOfQuery"
