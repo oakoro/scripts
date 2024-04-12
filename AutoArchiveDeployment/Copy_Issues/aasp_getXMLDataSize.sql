@@ -14,7 +14,7 @@ GO
 --  @xmlDataThreshold - Session log XML size threshold in byte
 -- ==============================================
 
-ALTER PROCEDURE [BPC].[aasp_getXMLDataSize]
+CREATE PROCEDURE [BPC].[aasp_getXMLDataSize]
 @minLogid BIGINT, @maxLogid BIGINT, @xmlDataThreshold BIGINT
 
 AS
