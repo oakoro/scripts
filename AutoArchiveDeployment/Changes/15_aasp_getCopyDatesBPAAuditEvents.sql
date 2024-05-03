@@ -1,12 +1,13 @@
-/****** Object:  StoredProcedure [BPC].[aasp_getCopyDatesBPAAuditEvents]    Script Date: 22/04/2024 11:50:12 ******/
-SET ANSI_NULLS ON
-GO
+/****** Create [BPC].[aasp_getCopyDatesBPAAuditEvents] Stored Procedure ******/
 
-SET QUOTED_IDENTIFIER ON
-GO
+
+BEGIN
+EXECUTE ('DROP PROCEDURE IF EXISTS [BPC].[aasp_getCopyDatesBPAAuditEvents];')
+DECLARE @aasp_getCopyDatesBPAAuditEvents NVARCHAR(MAX) = 
+'
 
 -- ==============================================================================
--- @version 24.4.23
+-- @version 24.5.03
 -- Description: Get date boundary to copy
 -- Usage: EXEC BPC.aasp_getCopyDatesBPAAuditEvents 5000 
 -- ==============================================================================
@@ -20,9 +21,9 @@ AS
 DECLARE @currCount INT -- Current count of data to copy
 DECLARE @maxDate DATETIME -- Ending date of data to copy 
 DECLARE @minDate DATETIME -- Starting date of data to copy
-DECLARE @defaultdate DATETIME = '1900-01-01 00:00:00.000' -- Default date
+DECLARE @defaultdate DATETIME = ''1900-01-01 00:00:00.000'' -- Default date
 
-DECLARE @lastDateCopied DATETIME = (SELECT last_processed_date FROM BPC.adf_watermark WHERE deltacolumn = 'eventdatetime') 
+DECLARE @lastDateCopied DATETIME = (SELECT last_processed_date FROM BPC.adf_watermark WHERE deltacolumn = ''eventdatetime'') 
 
 SELECT @currCount = COUNT(*) , @minDate = MIN(eventdatetime)  ,@maxDate = MAX(eventdatetime) FROM dbo.BPAAuditEvents WITH (NOLOCK) 
 
@@ -34,7 +35,7 @@ IF @lastDateCopied = @defaultdate
 	SELECT TOP(@maxCount) eventdatetime FROM dbo.BPAAuditEvents WITH (NOLOCK)  ORDER BY eventdatetime 
 	)
 	SELECT @maxDate = max(eventdatetime)  FROM cte_maxdate
-	SELECT ISNULL(@minDate,@defaultdate) AS 'minDate', ISNULL(@maxDate,@defaultdate) AS 'maxDate'
+	SELECT ISNULL(@minDate,@defaultdate) AS ''minDate'', ISNULL(@maxDate,@defaultdate) AS ''maxDate''
 	END
 	ELSE
 	IF @lastDateCopied <> @defaultdate
@@ -49,24 +50,20 @@ IF @lastDateCopied = @defaultdate
 		SELECT TOP(@maxCount) eventdatetime FROM  dbo.BPAAuditEvents WITH (NOLOCK) WHERE eventdatetime > @lastDateCopied ORDER BY eventdatetime 
 		)
 		SELECT @minDate = @lastDateCopied, @maxDate = MAX(eventdatetime)  FROM cte_maxdate
-		SELECT ISNULL(@minDate,@defaultdate) AS 'minDate', ISNULL(@maxDate,@defaultdate) AS 'maxDate'
+		SELECT ISNULL(@minDate,@defaultdate) AS ''minDate'', ISNULL(@maxDate,@defaultdate) AS ''maxDate''
 		END
 		ELSE
 		BEGIN
 		SET @minDate = @lastDateCopied
-		SELECT ISNULL(@minDate,@defaultdate) AS 'minDate', ISNULL(@maxDate,@defaultdate) AS 'maxDate'
+		SELECT ISNULL(@minDate,@defaultdate) AS ''minDate'', ISNULL(@maxDate,@defaultdate) AS ''maxDate''
 		END
 		END
 	
-	END		
+	END	'	
 
 
 		
-		
-		
-	
-
-
-GO
+EXECUTE SP_EXECUTESQL @aasp_getCopyDatesBPAAuditEvents
+END
 
 

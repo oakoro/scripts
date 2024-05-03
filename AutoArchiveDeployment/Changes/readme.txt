@@ -1,0 +1,18 @@
+New script
+3_adf_watermark_table
+4_create_and_populate_adf_configtable_table
+14_aasp_CopyBPAAuditEventsDelta
+15_aasp_getCopyDatesBPAAuditEvents
+16_adfsp_update_watermark_AuditEvents
+
+Outdated scripts 
+3_1_Initialize_adf_watermark_table  
+3_create_adf_watermark_table
+4_create_and_populate_adf_configtable_table
+
+Pipeline update
+BPAAuditEvents_Incremental_Pipeline
+Load_Multiple_Tables_Pipeline
+PL_Master_Pipeline
+
+

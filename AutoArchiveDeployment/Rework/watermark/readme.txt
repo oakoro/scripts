@@ -1,9 +1,0 @@
-Replacement
-New script
-3_adf_watermark_table
-4_create_and_populate_adf_configtable_table
-
-Replaced
-3_1_Initialize_adf_watermark_table  
-3_create_adf_watermark_table
-4_create_and_populate_adf_configtable_table
