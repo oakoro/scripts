@@ -31,5 +31,5 @@ group by SchemaName, name
 ORDER BY sum(rows) desc;
 
 go
-sp_spaceused 'BPAAuditEvents'
+--sp_spaceused 'BPAAuditEvents'
 --select 21196136/1024,21189552/1024

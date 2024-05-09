@@ -12,7 +12,6 @@ Outdated scripts
 
 Pipeline update
 BPAAuditEvents_Incremental_Pipeline
-Load_Multiple_Tables_Pipeline
 PL_Master_Pipeline
 
 

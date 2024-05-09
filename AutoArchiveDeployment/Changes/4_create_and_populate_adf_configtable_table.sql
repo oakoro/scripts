@@ -22,7 +22,6 @@ VALUES
 (N'dbo', N'BPAWorkQueueItemTag', N'BPAWorkQueueItemTag'),
 (N'dbo', N'BPATag', N'BPATag'),
 (N'dbo', N'BPASession', N'BPASession'),
-(N'dbo', N'BPAAuditEvents', N'BPAAuditEvents'),
 (N'dbo', N'BPAProcess', N'BPAProcess'),
 (N'dbo', N'BPAProcessEnvironmentVarDependency', N'BPAProcessEnvironmentVarDependency'),
 (N'dbo', N'BPAEnvironmentVar', N'BPAEnvironmentVar'),
@@ -34,6 +33,15 @@ VALUES
 INSERT [BPC].[adf_configtable] ([sourceschema], [sourcetable], [sinkfolder]) 
 SELECT [sourceschema], [sourcetable], [sinkfolder]
 FROM @configtable a
-WHERE NOT EXISTS (SELECT [sourcetable] FROM [BPC].[adf_configtable] b WHERE b.[sourcetable] = a.[sourcetable])
+WHERE NOT EXISTS (SELECT [sourcetable] FROM [BPC].[adf_configtable] b WHERE b.[sourcetable] = a.[sourcetable]);
+
+--Remove BPAAuditEvents from [BPC].[adf_configtable]
+IF EXISTS(SELECT 1 FROM [BPC].[adf_configtable] WHERE [sourcetable] = 'BPAAuditEvents')
+BEGIN
+DELETE [BPC].[adf_configtable] WHERE [sourcetable] = 'BPAAuditEvents'
+END
+
 
 SET NOCOUNT OFF
+
+
