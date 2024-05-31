@@ -16,7 +16,7 @@ CREATE PROCEDURE [BPC].[aasp_copyBPAAuditEventsDelta]
 
 AS
 
-SELECT * FROM dbo.BPAAuditEvents WITH (NOLOCK) WHERE eventdatetime >= @minDate and eventdatetime <= @maxDate 
+SELECT * FROM dbo.BPAAuditEvents WITH (NOLOCK) WHERE eventdatetime > @minDate and eventdatetime <= @maxDate 
 
 '
 EXECUTE SP_EXECUTESQL @aasp_copyBPAAuditEventsDelta

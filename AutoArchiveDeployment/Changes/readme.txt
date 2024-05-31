@@ -14,4 +14,12 @@ Pipeline update
 BPAAuditEvents_Incremental_Pipeline
 PL_Master_Pipeline
 
+Create global parameters  
+Name: auditeventsbatch
+Value: 1500
+
+Name: auditevents 
+Value: BPAAuditEvents 
+
+
 
