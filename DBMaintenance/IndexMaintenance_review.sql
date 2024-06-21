@@ -1,7 +1,7 @@
 DECLARE @schemaname sysname,@tablename sysname,@indexname sysname,
 		@partitionnum sysname,@frag sysname, @sqlcmd varchar(800),
 		@objectid sysname,@indexid sysname,@partitioncount tinyint,
-		@debug bit = 1, @fragreport bit = 1
+		@debug bit = 1
 
 DECLARE @fragmentDetails TABLE (
 schemaname sysname NULL,
@@ -29,7 +29,7 @@ JOIN sys.schemas as c ON c.schema_id = b.schema_id
 JOIN sys.indexes d on d.object_id = b.object_id and d.type = a.index_id
 WHERE avg_fragmentation_in_percent > 10.0 AND a.index_id > 0 AND page_count > 500
 
-
+select * from @fragmentDetails
 DECLARE defragIndex CURSOR
 FOR
 SELECT  schemaname,objectid,tablename,indexid,indexname,partitionnum,frag from @fragmentDetails
@@ -80,9 +80,5 @@ CLOSE defragIndex;
 
 DEALLOCATE defragIndex;
 
-IF @fragreport = 1
-BEGIN
-SELECT * FROM @fragmentDetails ORDER BY frag DESC
-END
 
 

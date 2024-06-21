@@ -7,4 +7,4 @@ go
 --go
 --select size*8/1024 from sysfiles where [name] <> 'log'
 
---kill 77
+select * from sys.dm_db_wait_stats order by wait_time_ms desc

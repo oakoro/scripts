@@ -1,0 +1,2 @@
+--Cannot TRUNCATE TABLE 'DBO.BPASessionLog_NonUnicode' because it is being referenced by object 'aavw_ControlTableUpdate'
+-- Drop view [BPC].[aavw_ControlTableUpdate]
