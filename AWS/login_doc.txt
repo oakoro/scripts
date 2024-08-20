@@ -1,0 +1,3 @@
+https://blueprism.atlassian.net/wiki/spaces/BPCPO/pages/3073081385/Access+AWS+Accounts+and+Customer+platforms+via+RDP
+
+myapps.microsoft.com > Login with your Blue Prism account

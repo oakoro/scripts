@@ -1,0 +1,17 @@
+bpc-usawsde2304-delta-airlines-prod-mssql-db.c38sdgbvfhot.us-east-1.rds.amazonaws.com
+
+
+
+DB
+6Jo4+oSVgjqW!(
+
+
+Ope
+
+rpaenvadmin
+
+On jump server, MS server, connect to SQL Server
+
+SQL Connection
+172.31.1.215
+US1AWSUSPIO1

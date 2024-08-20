@@ -1,0 +1,4 @@
+
+
+SELECT DATABASEPROPERTYEX(DB_NAME(), 'Updateability');
+

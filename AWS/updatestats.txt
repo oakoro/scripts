@@ -1,0 +1,7 @@
+--alter procedure myRDS_updatestats
+--with execute as 'dbo'
+--as
+--exec sp_updatestats
+--go
+
+--grant execute on myRDS_updatestats to rpaenvadmin
