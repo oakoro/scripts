@@ -13,3 +13,4 @@ INNER JOIN sys.all_columns ac
 ON ac.column_id = sc.column_id AND ac.object_id = sc.object_id
 CROSS APPLY sys.dm_db_stats_properties(stats.object_id, stats.stats_id) dsp
 where OBJECT_SCHEMA_NAME(stats.object_id) <> 'sys'
+order by TableName

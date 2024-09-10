@@ -9,3 +9,4 @@ JOIN sys.objects ob on st.object_id = ob.object_id
 JOIN sys.schemas as sc ON sc.schema_id = ob.schema_id
 JOIN sys.indexes i on i.object_id = ob.object_id and i.type = st.index_id
 WHERE avg_fragmentation_in_percent > 10.0 AND st.index_id > 0 AND page_count > 500
+order by avg_fragmentation_in_percent desc

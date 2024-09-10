@@ -107,4 +107,4 @@ end
 close shrinkdb_cursor
 deallocate shrinkdb_cursor
 
-
+--sp_updatestats
