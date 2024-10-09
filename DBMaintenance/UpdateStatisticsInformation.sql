@@ -86,6 +86,7 @@ GROUP BY
 --  so.[name], 
 --  st.[stats_id]
 )a
-where (last_updated < '2023-01-01 10:06:06.0266667' or last_updated is null ) and table_name not like 'sys%' and table_rows > 5000
-order by last_updated
+where --(last_updated < '2023-01-01 10:06:06.0266667' or last_updated is null ) and 
+schema_name not like 'sys%' and table_rows > 5000
+order by table_name,last_updated
 
