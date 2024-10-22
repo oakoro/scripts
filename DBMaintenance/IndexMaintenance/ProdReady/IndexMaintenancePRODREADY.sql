@@ -126,8 +126,8 @@ INTO @objectid,
 	VALUES(@objectname,@indexname,@partitionnum,@frag,GETDATE())
 
     --PRINT @command;
-	EXEC (@command);
-    --PRINT N'Executed: ' + @command;
+	--EXEC (@command);
+    PRINT N'Executed: ' + @command;
 
 	--Mark maintenance as completed
 	UPDATE dbo.DBMaintenance
@@ -164,3 +164,6 @@ GO
 --Clean maintenance history table
 DELETE dbo.DBMaintenance
 WHERE DATEDIFF(DD,maintenanceStarted,GETDATE()) > 30
+
+
+select * from dbo.DBMaintenance
