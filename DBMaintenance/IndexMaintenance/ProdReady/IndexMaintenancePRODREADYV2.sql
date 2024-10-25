@@ -1,5 +1,9 @@
+--Set run duration in minutes
+DECLARE @plannedruntime INT = 120
+
 SET NOCOUNT ON;
 
+--Declare other variables
 DECLARE @objectid INT;
 DECLARE @indexid INT;
 DECLARE @partitioncount BIGINT;
@@ -13,10 +17,8 @@ DECLARE @partitionnum BIGINT;
 DECLARE @partitions BIGINT;
 DECLARE @frag FLOAT;
 DECLARE @command NVARCHAR(4000);
-DECLARE @starttime DATETIME = GETDATE() --'2024-10-11 09:10:19.303'
+DECLARE @starttime DATETIME = GETDATE() 
 DECLARE @datediff INT;
-DECLARE @plannedruntime INT = 120
-
 
 
 --Define table variables
@@ -36,7 +38,6 @@ maintenanceStarted DATETIME,
 maintenanceCompleted DATETIME
 )
 END
-
 
 --identify indexes that cannot be rebuilt online
 INSERT @exempt_list(tablename,indexname,system_type_id)
@@ -65,36 +66,35 @@ FROM @work_to_do w JOIN sys.indexes i ON w.objectid = i.object_id AND w.indexid 
 LEFT JOIN @exempt_list l ON l.tablename = OBJECT_NAME(i.object_id) and l.indexname = i.name
 
 
--- Declare the cursor for the list of partitions to be processed.
-DECLARE partitions CURSOR
+-- Declare the cursor for the list of indexes to be processed.
+DECLARE indexmaint CURSOR
 FOR
 SELECT objectid,tablename,indexid,indexname ,partitionnum,frag ,[status]
-FROM  @work_to_do_final where indexname <> 'PK_BPARelease'
+FROM  @work_to_do_final 
 ORDER BY frag DESC;
 
 -- Open the cursor.
-OPEN partitions;
+OPEN indexmaint;
 
--- Loop through the partitions.
+-- Loop through the indexmaint.
 FETCH NEXT
-FROM partitions
-INTO @objectid,
-	@objectname,
-	@indexid,
-	@indexname,
-    @partitionnum,
-    @frag,
-	@exemptstatus;
+FROM indexmaint
+INTO	@objectid,
+		@objectname,
+		@indexid,
+		@indexname,
+		@partitionnum,
+		@frag,
+		@exemptstatus;
 
  
 	WHILE @@FETCH_STATUS = 0
 
 	BEGIN
-
+	BEGIN TRY
 	
-
     SELECT 
-        @schemaname = QUOTENAME(s.name)
+    @schemaname = QUOTENAME(s.name)
     FROM sys.objects AS o
     INNER JOIN sys.schemas AS s
         ON s.schema_id = o.schema_id
@@ -102,7 +102,7 @@ INTO @objectid,
 
 	SELECT @partitioncount = count(*)
     FROM sys.partitions 
-	 WHERE object_id = @objectid
+	WHERE object_id = @objectid
         AND index_id = @indexid;
 
      --30 is an arbitrary decision point at which to switch between reorganizing and rebuilding.
@@ -137,15 +137,30 @@ INTO @objectid,
 	
 
 --Terminate maintenance 
-SET @datediff = DATEDIFF(mi,@starttime,GETDATE())
+	SET @datediff = DATEDIFF(mi,@starttime,GETDATE())
 
-IF @datediff > @plannedruntime
-BEGIN
-BREAK;
-END
+	IF @datediff > @plannedruntime
+	BEGIN
+	BREAK;
+	END
+
+	END TRY
+	BEGIN CATCH
+	SELECT 
+	@objectname,
+	ERROR_MESSAGE() AS ErrorMessage;
+	SET @command = N'ALTER INDEX ' + @indexname + N' ON ' + @schemaname + N'.' + @objectname + N' REORGANIZE';
+	EXEC (@command);
+	PRINT N'Executed: ' + @command;
+
+	UPDATE dbo.DBMaintenance
+	SET maintenanceCompleted = GETDATE()
+	WHERE tableName = @objectname AND indexName = @indexname AND maintenanceCompleted IS NULL
+
+	END CATCH
 
 FETCH NEXT
-    FROM partitions
+    FROM indexmaint
     INTO @objectid,
 		@objectname,
 		@indexid,
@@ -156,9 +171,9 @@ FETCH NEXT
 END;
 
 -- Close and deallocate the cursor.
-CLOSE partitions;
+CLOSE indexmaint;
 
-DEALLOCATE partitions;
+DEALLOCATE indexmaint;
 
 GO
 
@@ -167,11 +182,3 @@ DELETE dbo.DBMaintenance
 WHERE DATEDIFF(DD,maintenanceStarted,GETDATE()) > 30
 
 
---select * from dbo.DBMaintenance
-/*
-Msg 2725, Level 16, State 2, Line 1
-An online operation cannot be performed for index 'PK_BPARelease' because the index contains column 'compressedxml' of data type text, ntext, image or FILESTREAM. For a non-clustered index, the column could be an include column of the index. For a clustered index, the column could be any column of the table. If DROP_EXISTING is used, the column could be part of a new or old index. The operation must be performed offline.
-Msg 2725, Level 16, State 2, Line 1
-An online operation cannot be performed for index 'PK_BPARelease' because the index contains column 'compressedxml' of data type text, ntext, image or FILESTREAM. For a non-clustered index, the column could be an include column of the index. For a clustered index, the column could be any column of the table. If DROP_EXISTING is used, the column could be part of a new or old index. The operation must be performed offline.
-
-*/
