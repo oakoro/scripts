@@ -1,12 +1,9 @@
   DECLARE @delTable table (eventid int)
   DECLARE @count int, @eventid int
- 
 
   insert @delTable
   select eventid FROM [dbo].[BPAAuditEvents]
-  where DATEPART(YEAR,[eventdatetime]) = '2024' --18726
-  and DATEPART(QUARTER,[eventdatetime]) = '2'
-  and DATEPART(MONTH,[eventdatetime]) = '4'
+  where DATEPART(YEAR,[eventdatetime]) in ('2023')--60018
 
   while (select count(*) from @delTable) > 0
   begin
@@ -16,9 +13,15 @@
   delete @delTable where eventid = @eventid
   end
   select eventid from @delTable
+
+    select distinct DATEPART(YEAR,[eventdatetime]) FROM [dbo].[BPAAuditEvents]
+	/*
+	2023
+2024
+2022
+2021
+2020
+*/
   
-   select distinct DATEPART(YEAR,[eventdatetime]),DATEPART(QUARTER,[eventdatetime]),
-   DATEPART(MONTH,[eventdatetime]) 
-   FROM [dbo].[BPAAuditEvents]
-   order by DATEPART(MONTH,[eventdatetime]) ,DATEPART(QUARTER,[eventdatetime])
+
   
