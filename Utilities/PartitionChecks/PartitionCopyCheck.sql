@@ -1,16 +1,5 @@
 select * from BPC.adf_watermark;
-
-SELECT p.partition_number,
-       SUM(u.total_pages) * 8/1024 AS Total_Reserved_Mb,
-       SUM(u.used_pages) * 8/1024 AS Used_Space_Mb,
-         MAX(p.rows) AS RowsCount
-FROM sys.allocation_units AS u
-JOIN sys.partitions AS p ON u.container_id = p.hobt_id
-JOIN sys.tables AS t ON p.object_id = t.object_id
-WHERE OBJECT_NAME(t.object_id) = 'BPASessionLog_NonUnicode'
-GROUP BY p.partition_number      
-ORDER BY partition_number
-
+go
 SELECT 
     t.name AS [Table], 
     i.name AS [Index], 
@@ -32,3 +21,15 @@ LEFT JOIN sys.partition_range_values AS r
     ON f.function_id = r.function_id and r.boundary_id = p.partition_number  
 WHERE i.type = 1 AND t.name = 'BPASessionLog_NonUnicode' 
 ORDER BY p.partition_number ASC;
+go
+SELECT p.partition_number,
+       SUM(u.total_pages) * 8/1024 AS Total_Reserved_Mb,
+       SUM(u.used_pages) * 8/1024 AS Used_Space_Mb,
+         MAX(p.rows) AS RowsCount
+FROM sys.allocation_units AS u
+JOIN sys.partitions AS p ON u.container_id = p.hobt_id
+JOIN sys.tables AS t ON p.object_id = t.object_id
+WHERE OBJECT_NAME(t.object_id) = 'BPASessionLog_NonUnicode'
+GROUP BY p.partition_number      
+ORDER BY partition_number
+

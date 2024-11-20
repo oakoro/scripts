@@ -24,19 +24,20 @@
 	PARTICULAR PURPOSE.
 */
 -- Set database context
-USE [Blue Prism Database Name Here];
-GO
+--USE [Blue Prism Database Name Here];
+--GO
 
 -- Set transaction isolation level
 SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
 
 -- Declare variables
-DECLARE @DaysToKeep INT;
+DECLARE @DaysToKeep INT= 365;
 DECLARE @Threshold DATETIME;
 DECLARE @TableName sysname;
 DECLARE @TotalRowCount DECIMAL(38, 2);
 DECLARE @ToDeleteRowCount DECIMAL(38, 2);
 DECLARE @TableSizeInMB DECIMAL(38, 2);
+DECLARE @QueueName VARCHAR(400) = 'Web Enquiries - UpdateEntries - Work Queue'
 DECLARE @QueuesToInclude TABLE
 (
     QueueID UNIQUEIDENTIFIER NULL,
@@ -44,13 +45,14 @@ DECLARE @QueuesToInclude TABLE
 );
 
 -- Set the variables
-SET @DaysToKeep = 7;
+--SET @DaysToKeep = 365;
 SET @Threshold = CONVERT(DATE, GETDATE() - @DaysToKeep);
 SET @TableName = 'BPAWorkQueueItem';
 
 -- Insert QueueNames, update the VALUES below to reflext the name of the Queues you want to target
 INSERT INTO @QueuesToInclude (QueueName)
-VALUES ('Queue2'),('Queue3'),('Test1');
+VALUES (@QueueName);
+--SELECT DISTINCT name from dbo.BPAWorkQueue;
 
 -- Update QueueIDs
 UPDATE @QueuesToInclude
@@ -107,11 +109,18 @@ AS (
 SELECT @TableSizeInMB = CAST((cte.pages * 8.) / 1024 AS DECIMAL(10, 2))
 FROM cte;
 
+SELECT @QueueName = STRING_AGG (CONVERT(NVARCHAR(max),QueueName), CHAR(13))  
+FROM @QueuesToInclude;
+
+
 -- Return Counts and Sizes
 SELECT @TableName AS TableName,
+	 @QueueName AS QueueNames,
+	 @DaysToKeep AS RetentionPeriod,
 	@TableSizeInMB AS TableSizeInMB,
 	@TotalRowCount AS TotalRowCount,
 	@ToDeleteRowCount AS ToDeleteRowCount,
 	CAST((@ToDeleteRowCount / @TotalRowCount) * 100 AS DECIMAL(10, 2)) AS PercentageOfDataToDelete,
 	CAST((@TableSizeInMB / 100) * CAST((@ToDeleteRowCount / @TotalRowCount) * 100 AS DECIMAL(10, 2)) AS DECIMAL(10, 2)) AS ApproxSizeOfDataToDeleteInMB;
+
 GO

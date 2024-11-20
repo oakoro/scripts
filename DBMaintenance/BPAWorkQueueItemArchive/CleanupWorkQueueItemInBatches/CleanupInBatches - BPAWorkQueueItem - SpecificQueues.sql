@@ -60,8 +60,7 @@
 */
 
 -- Set database context
-USE [Blue Prism Database Name Here];
-GO
+
 
 -- Declare variables
 DECLARE @DaysToKeep INT;
@@ -71,6 +70,7 @@ DECLARE @ERROR_STATE INT;
 DECLARE @ERROR_NUMBER INT;
 DECLARE @ERROR_LINE INT;
 DECLARE @ERROR_MESSAGE NVARCHAR(4000);
+DECLARE @Queuename NVARCHAR(200) = 'Web Enquiries - UpdateEntries - Work Queue'
 DECLARE @QueuesToInclude TABLE
 (
     QueueID UNIQUEIDENTIFIER NULL,
@@ -78,7 +78,7 @@ DECLARE @QueuesToInclude TABLE
 );
 
 -- Set variables, modify the @DaysToKeep to reflect the required retention period
-SET @DaysToKeep = 7;
+SET @DaysToKeep = 365;
 SET @Threshold = CONVERT(DATE, GETDATE() - @DaysToKeep);
 
 -- Create maintenance table to hold the WorkQueueItem(s) we want to delete
@@ -92,7 +92,7 @@ END;
 
 -- Insert QueueNames, update the VALUES below to reflext the name of the Queues you want to target
 INSERT INTO @QueuesToInclude (QueueName)
-VALUES ('Queue2'),('Queue3'),('Test1');
+VALUES (@Queuename);
 
 -- Update QueueIDs
 UPDATE @QueuesToInclude
