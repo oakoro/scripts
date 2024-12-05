@@ -7,7 +7,7 @@ DECLARE @ERROR_STATE INT;
 DECLARE @ERROR_NUMBER INT;
 DECLARE @ERROR_LINE INT;
 DECLARE @ERROR_MESSAGE NVARCHAR(4000);
-DECLARE @Queuename NVARCHAR(200) = 'Activation Checklist'
+DECLARE @Queuename NVARCHAR(200) = 'ES001 - Executor'
 DECLARE @QueuesToInclude TABLE
 (
     QueueID UNIQUEIDENTIFIER NULL,
@@ -68,10 +68,13 @@ END;
 			  AND WM.WorkQueueItemID IS NULL
 			  --AND I.finished < @Threshold
 			  AND datepart(year,convert(date,I.finished)) = '2024'
-			  AND datepart(month,convert(date,I.finished)) = '5'
-			  --AND datepart(week,convert(date,I.finished)) = '14'
+			  AND datepart(month,convert(date,I.finished)) in ('6','7','8')
+			  --AND datepart(week,convert(date,I.finished)) in ('23')
 			  AND QI.QueueID IS NOT NULL;
 
 	SELECT COUNT(*) FROM DeletedWorkQueueItems_Maintenance
+
+
+
 
 

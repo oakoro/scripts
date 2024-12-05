@@ -5,8 +5,9 @@
   insert @delTable
   select eventid FROM [dbo].[BPAAuditEvents]
   where DATEPART(YEAR,[eventdatetime]) = '2024' --18726
-  and DATEPART(QUARTER,[eventdatetime]) = '2'
-  and DATEPART(MONTH,[eventdatetime]) = '4'
+  and DATEPART(QUARTER,[eventdatetime]) = '3'
+  and DATEPART(MONTH,[eventdatetime]) = '8'
+  --and DATEPART(week,[eventdatetime]) = '32'
 
   while (select count(*) from @delTable) > 0
   begin
@@ -17,8 +18,8 @@
   end
   select eventid from @delTable
   
-   select distinct DATEPART(YEAR,[eventdatetime]),DATEPART(QUARTER,[eventdatetime]),
-   DATEPART(MONTH,[eventdatetime]) 
-   FROM [dbo].[BPAAuditEvents]
-   order by DATEPART(MONTH,[eventdatetime]) ,DATEPART(QUARTER,[eventdatetime])
+   --select distinct DATEPART(YEAR,[eventdatetime]),DATEPART(QUARTER,[eventdatetime]),
+   --DATEPART(MONTH,[eventdatetime]) 
+   --FROM [dbo].[BPAAuditEvents]
+   --order by DATEPART(MONTH,[eventdatetime]) ,DATEPART(QUARTER,[eventdatetime])
   
