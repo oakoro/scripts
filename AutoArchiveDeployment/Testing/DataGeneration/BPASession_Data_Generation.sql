@@ -1,6 +1,6 @@
 IF (SELECT @@SERVERNAME) = 'bpc-sql-x2hpo4kjv2qaa'
 BEGIN
-WHILE (SELECT COUNT(*) FROM [dbo].[BPASession]) < 200
+WHILE (SELECT COUNT(*) FROM [dbo].[BPASession]) < 10
 BEGIN
 DECLARE @starterresourceid NVARCHAR(50),@processid NVARCHAR(50), @starteruserid NVARCHAR(50),
 		@statusid TINYINT, @laststage NVARCHAR(50)
