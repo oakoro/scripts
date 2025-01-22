@@ -70,7 +70,7 @@ DECLARE @ERROR_STATE INT;
 DECLARE @ERROR_NUMBER INT;
 DECLARE @ERROR_LINE INT;
 DECLARE @ERROR_MESSAGE NVARCHAR(4000);
-DECLARE @Queuename NVARCHAR(200) = 'N002 - BeachHaemoRostering_Roster'
+DECLARE @Queuename NVARCHAR(200) = 'Snap Survey Reporting'
 DECLARE @QueuesToInclude TABLE
 (
     QueueID UNIQUEIDENTIFIER NULL,
@@ -131,8 +131,8 @@ BEGIN TRY
 		WHERE inext.id IS NULL
 			  AND WM.WorkQueueItemID IS NULL
 			  --AND I.finished < @Threshold
-			  AND datepart(year,convert(date,I.finished)) = '2024'
-			  AND datepart(month,convert(date,I.finished)) in ('7','8','6')
+			  AND datepart(year,convert(date,I.finished)) = '2025'
+			 -- AND datepart(month,convert(date,I.finished)) in ('7','8','6')
 			 --AND datepart(week,convert(date,I.finished)) in ('23')
 			  AND QI.QueueID IS NOT NULL;
 
