@@ -14,7 +14,7 @@ DECLARE @TableSizeInMB DECIMAL(38, 2);
 DECLARE @QueueToDelete VARCHAR(100) = 'Finance AR Reprocess Statement Allocations Status'
 
 -- Set the variables
-SET @DaysToKeep = 90;
+SET @DaysToKeep = 365;
 SET @Threshold = CONVERT(DATE, GETDATE() - @DaysToKeep);
 SET @TableName = 'BPAWorkQueueItem';
 
@@ -24,8 +24,9 @@ declare @queuetabl table (Queuename varchar(100),finished datetime)
 
 insert @queuetabl
 select q.name 'Queuename',i.finished from dbo.BPAWorkQueueItem i with (nolock) join dbo.BPAWorkQueue q with (nolock)on i.queueid = q.id
-where i.finished is not null and i.finished < @Threshold and 
-q.name not in ('Allocate Payroll - Email Reminders','Allocate Payroll - Jotform Received','Allocate Payroll - Jotform Sent','Allocate Payroll - IQX')
+where i.finished is not null and i.finished < @Threshold 
+--and 
+--q.name not in ('Allocate Payroll - Email Reminders','Allocate Payroll - Jotform Received','Allocate Payroll - Jotform Sent','Allocate Payroll - IQX')
 
 select Queuename, COUNT(*)'NoOfRowsToDelete' from @queuetabl group by Queuename order by NoOfRowsToDelete desc;
 /*
