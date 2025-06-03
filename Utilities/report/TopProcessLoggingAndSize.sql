@@ -7,9 +7,9 @@ as
 select l.logid, s.startdatetime, p.name,
 isnull(datalength(l.[result]), 1)[result] , 
 isnull(datalength(l.[attributexml]), 1) [attributexml]
-from dbo.BPASessionLog_NonUnicode l 
-join dbo.BPASession s on l.sessionnumber = s.sessionnumber
-join dbo.BPAProcess p on p.processid = s.processid
+from dbo.BPASessionLog_NonUnicode l with (nolock)
+join dbo.BPASession s with (nolock) on l.sessionnumber = s.sessionnumber
+join dbo.BPAProcess p with (nolock) on p.processid = s.processid
 where s.startdatetime > @startdate
 --where s.startdatetime between @startdate1 and @startdate --'2024-07-15 11:02:18.097'
 )

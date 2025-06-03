@@ -1,6 +1,6 @@
 SET NOCOUNT ON
 --Set 1 to print out delete script
-DECLARE @print BIT = 1
+DECLARE @print BIT = 0
 
 --EXEMPTED QUEUES
 DECLARE @exemptedqueue TABLE ([name] NVARCHAR(255));
@@ -15,7 +15,7 @@ VALUES('')
 DECLARE @DaysToKeep INT;
 DECLARE @Threshold DATETIME;
 
-SET @DaysToKeep = 365;
+SET @DaysToKeep = 60;
 SET @Threshold = CONVERT(DATE, GETDATE() - @DaysToKeep);
 
 IF (OBJECT_ID('usrWQIDeleted','U')) IS NOT NULL

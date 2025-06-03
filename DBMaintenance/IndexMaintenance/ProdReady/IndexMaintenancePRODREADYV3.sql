@@ -193,4 +193,7 @@ GO
 DELETE dbo.DBMaintenance
 WHERE DATEDIFF(DD,maintenanceStarted,GETDATE()) > 30
 
+GO
+sp_updatestats
+GO
 

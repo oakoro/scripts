@@ -1,4 +1,6 @@
-SELECT datepart(YEAR,eventdatetime) 'Year', datepart(MONTH,eventdatetime) 'Month',
+SELECT datepart(YEAR,eventdatetime) 'Year', 
+datepart(QUARTER,eventdatetime) 'Quarter',
+datepart(MONTH,eventdatetime) 'Month',
 sum(
 isnull(datalength([eventdatetime]),0) 
       +isnull(datalength([eventid]),0) 
@@ -13,7 +15,9 @@ isnull(datalength([eventdatetime]),0)
       +isnull(datalength([oldXML]),0)
       +isnull(datalength([newXML]),0))/1024 'DataSize'
   FROM [dbo].[BPAAuditEvents] 
-Group by datepart(YEAR,eventdatetime) ,datepart(MONTH,eventdatetime)
+Group by datepart(YEAR,eventdatetime) ,
+datepart(QUARTER,eventdatetime),
+datepart(MONTH,eventdatetime)
 ORDER BY Year,Month
 
 select
