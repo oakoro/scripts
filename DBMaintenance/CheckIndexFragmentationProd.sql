@@ -20,7 +20,7 @@ SELECT object_id AS objectid,
     partition_number AS partitionnum,
     avg_fragmentation_in_percent AS frag
 FROM sys.dm_db_index_physical_stats(DB_ID(), NULL, NULL, NULL, 'LIMITED')
-WHERE avg_fragmentation_in_percent > 10.0
+WHERE avg_fragmentation_in_percent > 10.0 and page_count > 1000
     AND index_id > 0;
 
 INSERT @work_to_do_final(objectid,tablename,indexid,indexname ,frag ,partitionnum,[status])
@@ -30,5 +30,6 @@ FROM @work_to_do w JOIN sys.indexes i ON w.objectid = i.object_id AND w.indexid 
 LEFT JOIN @exempt_list l ON l.tablename = OBJECT_NAME(i.object_id) and l.indexname = i.name
 
 
-select * from @work_to_do_final order by --tablename,indexname,partitionnum, 
+select * from @work_to_do_final 
+order by --tablename,indexname,partitionnum, 
 frag desc
