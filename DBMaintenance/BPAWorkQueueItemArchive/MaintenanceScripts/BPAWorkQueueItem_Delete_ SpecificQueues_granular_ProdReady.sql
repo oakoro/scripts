@@ -15,7 +15,7 @@ VALUES('')
 DECLARE @DaysToKeep INT;
 DECLARE @Threshold DATETIME;
 
-SET @DaysToKeep = 60;
+SET @DaysToKeep = 30;
 SET @Threshold = CONVERT(DATE, GETDATE() - @DaysToKeep);
 
 IF (OBJECT_ID('usrWQIDeleted','U')) IS NOT NULL
