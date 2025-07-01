@@ -1,0 +1,50 @@
+Write-Output "Run started"
+
+# Authenticate with Azure using managed identity
+$connection = Connect-AzAccount -Identity
+
+# Get the secret from Key Vault
+$secretValue = Get-AzKeyVaultSecret -VaultName "BPC-SQL-evimsk5gsrmv6" -Name "BPC-SQL-evimsk5gsrmv6"  -AsPlainText
+
+# Instantiate the connection to the SQL Database
+
+$sqlConnection = new-object System.Data.SqlClient.SqlConnection
+
+
+$sqlConnection.ConnectionString = "Data Source=bpc-sql-evimsk5gsrmv6.database.windows.net;Initial Catalog=RPA-Production;Integrated Security=False;User ID=dbadmin;Password=$secretValue;Connect Timeout=60;Encrypt=False;TrustServerCertificate=False"
+
+
+$sqlConnection.Open()
+
+
+Write-Output "Azure SQL database connection opened"
+
+
+# Define the SQL command to run
+
+$sqlCommand = new-object System.Data.SqlClient.SqlCommand
+
+$sqlCommand.CommandTimeout = 120
+
+$sqlCommand.Connection = $sqlConnection
+
+
+Write-Output "Issuing command to run stored procedure"
+
+
+# Execute the SQL command
+
+$sqlCommand.CommandText= 'exec [dbo].[dbaIndexRebuild]'
+
+$result = $sqlCommand.ExecuteNonQuery()
+
+
+Write-Output "Stored procedure execution completed"
+
+
+# Close the SQL connection
+
+$sqlConnection.Close()
+
+
+Write-Output "Run completed"
