@@ -9,7 +9,7 @@ create nonclustered index noncl_BPASchLogEntry_entrytime on #BPAScheduleLogEntry
 
 insert #BPAScheduleLogEntry(id,entrytime)
 select top 50000000 id, entrytime from BPAScheduleLogEntry with (nolock) 
-where id > 290049927
+where id > 306001643
 order by id -- 306,001,643
 
 select max(id) 'MaxID' from #BPAScheduleLogEntry
@@ -24,3 +24,6 @@ group by entrytime
 select entrytime, sum(recdCount) from cte
 group by entrytime
 order by entrytime
+
+--select top 1* from BPAScheduleLogEntry where id = 290049927-- entrytime > '2024-06-17'
+

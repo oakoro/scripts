@@ -1,6 +1,5 @@
 SET NOCOUNT ON
---Set 1 to print out delete script
-DECLARE @print BIT = 0
+
 
 --EXEMPTED QUEUES
 DECLARE @exemptedqueue TABLE ([name] NVARCHAR(255));
@@ -15,10 +14,10 @@ VALUES('')
 DECLARE @DaysToKeep INT;
 DECLARE @Threshold DATETIME;
 
-SET @DaysToKeep = 30;
+SET @DaysToKeep = 0;
 SET @Threshold = CONVERT(DATE, GETDATE() - @DaysToKeep);
 
-
+select @Threshold
 
 IF (OBJECT_ID('tempdb..#QueuesToInclude','U')) IS NOT NULL
 BEGIN
@@ -38,6 +37,7 @@ CREATE TABLE #QueuesToInclude(
 
 DECLARE @QueuesToInclude TABLE(
 	queueID UNIQUEIDENTIFIER NOT NULL,
+	queueName NVARCHAR(255) NOT NULL,
 	year SMALLINT,
 	month TINYINT ,
 	week TINYINT ,
@@ -52,10 +52,13 @@ WHERE i.finished IS NOT NULL AND i.finished < @Threshold AND
 q.name NOT IN 
 (SELECT name FROM @exemptedqueue)
 
-INSERT @QueuesToInclude(queueID,year,mONth,week,day,recordCount)
-SELECT queueID,year,mONth,week,day,count(*) FROM #QueuesToInclude
-GROUP BY queueID,year,mONth,week,day
+INSERT @QueuesToInclude(queueID,queueName,year,mONth,week,day,recordCount)
+SELECT queueID,queueName,year,mONth,week,day,count(*) FROM #QueuesToInclude
+GROUP BY queueID,queueName,year,mONth,week,day
 
 
 --select queueID,sum(recordCount) from @QueuesToInclude group by queueID 
 select * from @QueuesToInclude order by queueID,year,mONth
+
+select queueName,year,SUM(recordCount)'recordCount' from @QueuesToInclude
+group by queueName,year

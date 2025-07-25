@@ -5,14 +5,21 @@ select percent_complete,blocking_session_id,wait_type,* from sys.dm_exec_request
 go
 sp_whoisactive
 go
-select * from dbo.DBMaintenance --where tableName =  'BPASessionLog_NonUnicode'
-ORDER BY frag desc
+--select * from dbo.DBMaintenance --where tableName =  'BPASessionLog_NonUnicode'
+--ORDER BY frag desc
 --select size*8/1024 from sysfiles where [name] <> 'log'
 
 --select * from sys.dm_db_wait_stats order by wait_time_ms desc
 
 --select * from sys.partitions where OBJECT_NAME(object_id) = 'BPASession'
 
---select * from dbo.usrWQIDeleted where queueid = '2C7DAF3D-A2F0-430A-943A-7B8389C5BA99'
+select count(*) from dbo.usrWQIDeleted --order by year-- desc, month desc, week desc, day desc
+go
+select * from dbo.usrWQIDeleted with (nolock) 
+--where queueID <> '6B6D92A9-87BD-4B24-9F9E-A8CB9FAA5FDE'
+order by year desc, month desc, week desc, day desc
+
+
+
 
 
