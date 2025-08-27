@@ -1,5 +1,5 @@
 
-declare @sessionnumber bigint,@retaindays tinyint = 30;
+declare @sessionnumber bigint,@retaindays tinyint = 7;
 
 with get_oldest_session_to_retain
 as
