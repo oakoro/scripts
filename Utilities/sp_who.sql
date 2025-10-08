@@ -13,11 +13,11 @@ go
 
 --select * from sys.partitions where OBJECT_NAME(object_id) = 'BPASession'
 
-select count(*) from dbo.usrWQIDeleted --order by year-- desc, month desc, week desc, day desc
-go
-select * from dbo.usrWQIDeleted with (nolock) 
---where queueID <> '6B6D92A9-87BD-4B24-9F9E-A8CB9FAA5FDE'
-order by year desc, month desc, week desc, day desc
+--select count(*) from dbo.usrWQIDeleted --order by year-- desc, month desc, week desc, day desc
+--go
+--select * from dbo.usrWQIDeleted with (nolock) 
+----where queueID <> '6B6D92A9-87BD-4B24-9F9E-A8CB9FAA5FDE'
+--order by year desc, month desc, week desc, day desc
 
 
 

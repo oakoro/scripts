@@ -3,7 +3,7 @@ SET NOCOUNT ON
 
 DECLARE @tbl TABLE (
 partition_number TINYINT,
-[PercentIncrease] DECIMAL(5,2)
+[PercentIncrease] DECIMAL(10,2)
 )
 
 
