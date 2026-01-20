@@ -1,9 +1,14 @@
-select top 2* from BPAWorkQueueItem
-select top 2* from dbo.BPAWorkQueue
+-- select top 2* from BPAWorkQueueItem
+--select * from dbo.BPAWorkQueue where name like '%eRS%'
 
---[R] UBRN Information Extraction - Extract
---[R] UBRN Information Extraction - Extract
-select top 20 
+-- select distinct status from dbo.BPAWorkQueueItem
+
+
+--[R] DOB - eRS to DocPub and Careflow
+--[R] DOL - eRS to Lorenzo Upload
+--[R] DOS - eRS to Careflow and Southend Upload
+
+select  
 q.name 'Queuename',
 i.status,
 i.attempt,
@@ -28,4 +33,15 @@ i.lastupdated
 from dbo.BPAWorkQueueItem i with (nolock) join dbo.BPAWorkQueue q with (nolock) 
 on i.queueid = q.id
 join dbo.BPASession s with (nolock) on s.sessionid = i.sessionid
-where q.name = '[R] UBRN Information Extraction - Extract' and i.exceptionreason is not null
+where q.name 
+IN
+(
+-- '[R] DOB - eRS to DocPub and Careflow'
+-- '[R] DOL - eRS to Lorenzo Upload'
+'[R] DOS - eRS to Careflow and Southend Upload'
+)
+
+and finished is NULL
+
+
+--and i.exceptionreason is not null

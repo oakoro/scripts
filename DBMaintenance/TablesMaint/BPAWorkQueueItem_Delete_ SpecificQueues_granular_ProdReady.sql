@@ -111,7 +111,7 @@ END
 IF (SELECT 1 FROM @QueuesToInclude) IS NULL
 PRINT 'Purge completed successfully'
 
-/*Delete in batches of 25,000 BPATag records that are not associated with a work queue item*/
+/*Delete BPATag records that are not associated with a work queue item*/
   DELETE T
     FROM BPATag AS T
     LEFT JOIN BPAWorkQueueItemTag AS IT
