@@ -1,3 +1,5 @@
+-- [BPC].[aasp_delete_copied_Sessionlog_partition] @partitionsretained = 2
+-- GO
 select * from BPC.adf_watermark;
 go
 SELECT 

@@ -60,5 +60,5 @@ GROUP BY queueID,queueName,year,mONth,week,day
 --select queueID,sum(recordCount) from @QueuesToInclude group by queueID 
 select * from @QueuesToInclude order by queueID,year,mONth
 
-select queueName,year,SUM(recordCount)'recordCount' from @QueuesToInclude
-group by queueName,year
+select queueName,year,[month],SUM(recordCount)'recordCount' from @QueuesToInclude
+group by queueName,year,[month]
