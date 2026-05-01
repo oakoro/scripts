@@ -1,4 +1,5 @@
-                      
+sp_updatestats
+GO                      
 declare @DBFileName sysname
 declare @TargetFreeMB int
 declare @ShrinkIncrementMB int
@@ -96,5 +97,5 @@ fetch next from shrinkdb_cursor into @DBFileName
 end
 close shrinkdb_cursor
 deallocate shrinkdb_cursor
-
---sp_updatestats
+GO
+sp_updatestats
