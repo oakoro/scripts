@@ -1,4 +1,4 @@
-DECLARE @DaysToKeep INT =  datediff(day,'2026-01-01',getdate())
+DECLARE @DaysToKeep INT =  datediff(day,'2026-04-01',getdate())
 select @DaysToKeep
 -----------------
 DECLARE @Threshold DATETIME = DATEADD(DAY,-@DaysToKeep,GETDATE())
